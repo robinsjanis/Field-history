@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lauku darbi</title>
+<style>
+:root{--bg:#f2f5ef;--card:#fff;--tx:#17231a;--mut:#667469;--ac:#1c7c3b;--acb:#e5f3e8;--bd:#e4e8df;--wr:#c0392b;--sh:0 1px 2px rgba(20,40,25,.06),0 6px 18px rgba(20,40,25,.08);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1410;--card:#19221b;--tx:#e8efe9;--mut:#93a396;--ac:#72d28f;--acb:#233427;--bd:#27342a;--wr:#f19083;--sh:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1410;--card:#19221b;--tx:#e8efe9;--mut:#93a396;--ac:#72d28f;--acb:#233427;--bd:#27342a;--wr:#f19083;--sh:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:92px}
+main{max-width:640px;margin:0 auto;padding:14px}
+h1{font-size:28px;letter-spacing:-.02em;margin:8px 0 2px}
+.sub{color:var(--mut);font-size:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:14px;margin-bottom:10px;box-shadow:var(--sh)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sp{justify-content:space-between}
+.mut{color:var(--mut);font-size:14px}
+.b{font-weight:700}
+button{font:inherit;font-weight:600;border:0;background:var(--acb);color:var(--ac);border-radius:999px;padding:10px 16px;min-height:44px}
+button:active{transform:scale(.97)}
+button.p{background:var(--ac);color:var(--bg)}
+button.d{background:none;color:var(--wr)}
+input,select,textarea{font:inherit;width:100%;padding:11px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--bg);color:var(--tx);margin:3px 0 10px}
+label{font-size:13px;font-weight:600;color:var(--mut)}
+.tag{background:var(--acb);color:var(--ac);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}
+.tb{border-radius:999px;padding:3px 11px;font-size:13px;font-weight:700}
+.dist{font-weight:700;color:var(--ac);font-size:14px}
+.hide{display:none}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);background:color-mix(in srgb,var(--card) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px);z-index:50}
+nav button{flex:1;border-radius:0;background:none;color:var(--mut);padding:8px 4px 6px;min-height:0}
+nav button.on{color:var(--ac)}
+nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 2px}
+nav span{font-size:11px}
+#mapwrap{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);bottom:calc(55px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column}
+#mapwrap.hide{display:none}
+#mt{padding:10px 12px;background:var(--card);box-shadow:var(--sh);position:relative;z-index:5}
+#map{flex:1;min-height:0;isolation:isolate}
+#dt{position:absolute;left:10px;right:10px;bottom:30px;z-index:5;justify-content:center;flex-wrap:nowrap;background:var(--card);padding:8px;border-radius:24px;box-shadow:0 4px 20px rgba(0,0,0,.35)}
+#dt.hide{display:none}
+#dt button{flex:1;min-height:48px;padding:8px 6px;font-size:15px}
+#ms{font-weight:600}
+.leaflet-tooltip.ft{background:none;border:0;box-shadow:none;font-weight:700;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}
+.leaflet-tooltip.ft::before{display:none}
+.leaflet-popup-content button{margin-top:6px;min-height:38px}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+<main id="app"></main>
+<div id="mapwrap" class="hide"><div id="mt"><div class="row" id="mr">
+<button class="p" onclick="me()">Mana vieta</button><button onclick="startDraw()">Zīmēt lauku</button><button onclick="document.getElementById('shpf').click()">Ielādēt kontūras</button><button class="d" onclick="clearImp()">Notīrīt</button></div>
+<div class="row hide" id="dt"><button onclick="undoPt()">↶ Atsaukt</button><button onclick="gpsPt()">◎ GPS punkts</button><button class="p" onclick="finishDraw()">✓ Gatavs</button><button class="d" onclick="cancelDraw()">✕</button></div>
+<div class="mut" id="ms" style="margin-top:4px"></div><input type="file" id="shpf" multiple class="hide" onchange="onShp(this.files)"></div>
+<div id="map"></div></div>
+<nav>
+<button data-t="lauki"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M3 14.5h18"/></svg><span>Lauki</span></button>
+<button data-t="karte"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Karte</span></button>
+<button data-t="darbi"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg><span>Darbi</span></button>
+<button data-t="kopija"><svg viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4-4m4 4l4-4"/><path d="M4 19h16"/></svg><span>Kopija</span></button>
+</nav>
+<script>
+const KEY='lauku_darbi_v1';
+const TYPES=['Sēja','Smidzināšana','Apstrāde','Mēslošana','Novākšana','Cits'];
+let db={fields:[],jobs:[]};
+let tab='lauki',view=null,pos=null,gpsMsg='',filt={f:'',t:''},msg='';
+try{const r=localStorage.getItem(KEY);if(r)db=JSON.parse(r)}catch(e){}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>new Date().toISOString().slice(0,10);
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){msg='Neizdevās saglabāt ierīcē!'}}
+function dist(a,b){const R=6371000,t=x=>x*Math.PI/180,dl=t(b.lat-a.lat),dn=t(b.lon-a.lon);
+ const h=Math.sin(dl/2)**2+Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+const fmt=m=>m<1?'jūs esat šeit':m<1000?Math.round(m)+' m':(m/1000).toFixed(1)+' km';
+const fname=id=>(db.fields.find(f=>f.id===id)||{name:'(dzēsts lauks)'}).name;
+
+function locate(cb){
+ if(!navigator.geolocation){gpsMsg='GPS nav pieejams šajā ierīcē.';render();return}
+ gpsMsg='Nosaka atrašanās vietu…';render();
+ navigator.geolocation.getCurrentPosition(p=>{pos={lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy};gpsMsg='Precizitāte ±'+Math.round(pos.acc)+' m';cb?cb():render()},
+ e=>{gpsMsg=e.code===1?'Piekļuve atrašanās vietai nav atļauta. Atļaujiet to pārlūka iestatījumos.':'Neizdevās noteikt atrašanās vietu.';render()},
+ {enableHighAccuracy:true,timeout:15000,maximumAge:10000});
+}
+
+function sortedFields(){
+ return db.fields.map(f=>({...f,d:(pos&&(f.geom||f.lat!=null))?fdist(pos,f):null}))
+  .sort((a,b)=>a.d==null?(b.d==null?a.name.localeCompare(b.name):1):b.d==null?-1:a.d-b.d);
+}
+function jobCard(j){
+ const c=TC[j.type]||'#7a7f87';
+ return `<div class="card"><div class="row sp"><span class="tb" style="background:${c}22;color:${c}">${esc(j.type)}</span><span class="mut">${esc(j.date)}</span></div>
+ <div class="b" style="margin-top:7px">${esc(fname(j.field))}</div>
+ ${j.product?`<div class="mut">${esc(j.product)}${j.dose?' · '+esc(j.dose):''}</div>`:''}
+ ${j.note?`<div class="mut">${esc(j.note)}</div>`:''}
+ <div class="row" style="margin-top:8px"><button onclick="editJob('${j.id}')">Labot</button><button class="d" onclick="delJob('${j.id}')">Dzēst</button></div></div>`;
+}
+
+function render(){
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab&&!view));
+ const A=$('#app'),isMap=tab==='karte'&&!view;
+ $('#mapwrap').classList.toggle('hide',!isMap);A.classList.toggle('hide',isMap);
+ if(isMap){mapRender();return}
+ if(view){A.innerHTML=view();return}
+ if(tab==='lauki')A.innerHTML=vLauki();
+ else if(tab==='darbi')A.innerHTML=vDarbi();
+ else A.innerHTML=vKopija();
+}
+
+function vLauki(){
+ const L=sortedFields(),tot=db.fields.reduce((s,f)=>s+(parseFloat(f.area)||0),0);
+ return `<h1>Lauki</h1><div class="sub">${db.fields.length} lauki · ${tot.toFixed(1)} ha</div>
+ <div class="row" style="margin:12px 0"><button class="p" onclick="locate()">◎ Tuvākie lauki</button><button onclick="editField()">+ Jauns lauks</button></div>
+ ${gpsMsg?`<div class="mut" style="margin:-4px 0 10px">${esc(gpsMsg)}</div>`:''}
+ ${L.length?L.map(f=>`<div class="card" onclick="openField('${f.id}')" style="border-left:7px solid ${fcol(f.id)}">
+  <div class="row sp"><span class="b">${esc(f.name)}</span>${f.d!=null?`<span class="dist">${fmt(f.d)}</span>`:''}</div>
+  <div class="row" style="margin-top:7px">${f.area?`<span class="tag">${esc(f.area)} ha</span>`:''}${f.crop?`<span class="tag">${esc(f.crop)}</span>`:''}<span class="tag">${db.jobs.filter(j=>j.field===f.id).length} darbi</span>${f.lat==null?'<span class="tag">bez vietas</span>':''}</div></div>`).join(''):'<div class="card mut">Lauku vēl nav. Uzzīmējiet lauku kartē vai nospiediet „+ Jauns lauks”.</div>'}`;
+}
+
+function openField(id){
+ const f=db.fields.find(x=>x.id===id);if(!f)return;
+ view=()=>{const J=db.jobs.filter(j=>j.field===id).sort((a,b)=>b.date.localeCompare(a.date));
+ return `<div class="row sp"><button onclick="back()">← Atpakaļ</button><button onclick="editField('${id}')">Labot lauku</button></div>
+ <h1>${esc(f.name)}</h1><div class="mut">${f.area?esc(f.area)+' ha · ':''}${esc(f.crop)}${f.lat!=null?' · '+f.lat.toFixed(5)+', '+f.lon.toFixed(5):''}</div>
+ <div class="row" style="margin:10px 0"><button class="p" onclick="editJob(null,'${id}')">+ Jauns darbs</button><button onclick="exportData('${id}')">Eksportēt šo lauku</button></div>
+ ${J.length?J.map(jobCard).join(''):'<div class="card mut">Šim laukam vēl nav darbu.</div>'}`};
+ render();window.scrollTo(0,0);
+}
+function back(){view=null;render()}
+
+function editField(id){
+ const f=id?db.fields.find(x=>x.id===id):{name:'',area:'',crop:'',lat:null,lon:null};
+ view=()=>`<div class="row"><button onclick="${id?`openField('${id}')`:'back()'}">← Atcelt</button></div>
+ <h1>${id?'Labot lauku':'Jauns lauks'}</h1><div class="card">
+ <label>Nosaukums</label><input id="fn" value="${esc(f.name)}">
+ <label>Platība (ha)</label><input id="fa" type="number" step="0.01" inputmode="decimal" value="${esc(f.area)}">
+ <label>Kultūra / piezīme</label><input id="fc" value="${esc(f.crop)}">
+ <label>Atrašanās vieta</label>
+ <div class="row"><input id="fla" placeholder="platums" value="${f.lat??''}" style="flex:1"><input id="flo" placeholder="garums" value="${f.lon??''}" style="flex:1"></div>
+ <button onclick="fillGps()">Izmantot manu pašreizējo vietu</button>
+ <div class="mut" id="fg" style="margin:6px 0">${esc(gpsMsg)}</div>
+ <div class="mut">Stāviet lauka vidū vai pie ieejas un nospiediet pogu. Pēc tam lauks parādīsies tuvāko sarakstā.</div>
+ <div class="row" style="margin-top:12px"><button class="p" onclick="saveField('${id||''}')">Saglabāt</button>${id?`<button class="d" onclick="delField('${id}')">Dzēst lauku</button>`:''}</div></div>`;
+ render();window.scrollTo(0,0);
+}
+function fillGps(){
+ if(!navigator.geolocation){$('#fg').textContent='GPS nav pieejams.';return}
+ $('#fg').textContent='Nosaka vietu…';
+ navigator.geolocation.getCurrentPosition(p=>{$('#fla').value=p.coords.latitude.toFixed(6);$('#flo').value=p.coords.longitude.toFixed(6);$('#fg').textContent='Precizitāte ±'+Math.round(p.coords.accuracy)+' m'},
+ e=>{$('#fg').textContent=e.code===1?'Piekļuve atrašanās vietai nav atļauta.':'Neizdevās noteikt vietu.'},{enableHighAccuracy:true,timeout:15000});
+}
+function saveField(id){
+ const name=$('#fn').value.trim();if(!name){alert('Ierakstiet lauka nosaukumu.');return}
+ const la=parseFloat($('#fla').value),lo=parseFloat($('#flo').value);
+ const o={name,area:$('#fa').value,crop:$('#fc').value.trim(),lat:isNaN(la)?null:la,lon:isNaN(lo)?null:lo};
+ if(id)Object.assign(db.fields.find(x=>x.id===id),o);else db.fields.push({id:uid(),...o});
+ save();view=null;render();
+}
+function delField(id){
+ const n=db.jobs.filter(j=>j.field===id).length;
+ if(!confirm('Dzēst lauku'+(n?' un tā '+n+' darbus':'')+'?'))return;
+ db.fields=db.fields.filter(f=>f.id!==id);db.jobs=db.jobs.filter(j=>j.field!==id);save();view=null;render();
+}
+
+function editJob(id,fid){
+ if(!db.fields.length){alert('Vispirms pievienojiet vismaz vienu lauku.');tab='lauki';view=null;render();return}
+ const near=sortedFields()[0];
+ const j=id?db.jobs.find(x=>x.id===id):{date:today(),type:TYPES[1],field:fid||near.id,product:'',dose:'',note:''};
+ view=()=>`<div class="row"><button onclick="back()">← Atcelt</button></div>
+ <h1>${id?'Labot darbu':'Jauns darbs'}</h1><div class="card">
+ <label>Lauks</label><select id="jf">${sortedFields().map(f=>`<option value="${f.id}" ${f.id===j.field?'selected':''}>${esc(f.name)}${f.d!=null?' ('+fmt(f.d)+')':''}</option>`).join('')}</select>
+ <label>Darba veids</label><select id="jt">${TYPES.map(t=>`<option ${t===j.type?'selected':''}>${t}</option>`).join('')}</select>
+ <label>Datums</label><input id="jd" type="date" value="${esc(j.date)}">
+ <label>Līdzeklis / sēklas / mēslojums</label><input id="jp" value="${esc(j.product)}">
+ <label>Deva (piem., 0,5 l/ha)</label><input id="jo" value="${esc(j.dose)}">
+ <label>Piezīmes (laiks, vējš, tehnika…)</label><textarea id="jn" rows="3">${esc(j.note)}</textarea>
+ <button class="p" onclick="saveJob('${id||''}')">Saglabāt</button></div>`;
+ render();window.scrollTo(0,0);
+}
+function saveJob(id){
+ const o={field:$('#jf').value,type:$('#jt').value,date:$('#jd').value||today(),product:$('#jp').value.trim(),dose:$('#jo').value.trim(),note:$('#jn').value.trim()};
+ if(id)Object.assign(db.jobs.find(x=>x.id===id),o);else db.jobs.push({id:uid(),...o});
+ save();back();
+}
+function delJob(id){if(confirm('Dzēst šo darbu?')){db.jobs=db.jobs.filter(j=>j.id!==id);save();render()}}
+
+function vDarbi(){
+ let J=db.jobs.filter(j=>(!filt.f||j.field===filt.f)&&(!filt.t||j.type===filt.t)).sort((a,b)=>b.date.localeCompare(a.date));
+ return `<h1>Darbi</h1><div class="card"><button class="p" onclick="editJob()">+ Jauns darbs</button>
+ <div class="row" style="margin-top:10px"><select id="ff" onchange="filt.f=this.value;render()" style="flex:1"><option value="">Visi lauki</option>${db.fields.map(f=>`<option value="${f.id}" ${filt.f===f.id?'selected':''}>${esc(f.name)}</option>`).join('')}</select>
+ <select onchange="filt.t=this.value;render()" style="flex:1"><option value="">Visi darbi</option>${TYPES.map(t=>`<option ${filt.t===t?'selected':''}>${t}</option>`).join('')}</select></div></div>
+ ${J.length?J.map(jobCard).join(''):'<div class="card mut">Nav darbu.</div>'}`;
+}
+
+function vKopija(){
+ const last=localStorage.getItem(KEY+'_last');
+ return `<h1>Rezerves kopija</h1>
+ <div class="card"><div class="b">Dati ir šajā ierīcē</div><div class="mut">${db.fields.length} lauki, ${db.jobs.length} darbi.${last?' Pēdējā kopija: '+esc(last):' Kopija vēl nav veidota.'}</div></div>
+ <div class="card"><div class="b">Saglabāt datubāzes failu</div>
+ <div class="mut" style="margin:4px 0 8px">Failu (.json) var saglabāt ierīcē vai nosūtīt uz Google Drive. Nospiediet pogu un izvēlieties „Drive” vai „Saglabāt failos”.</div>
+ <div class="row"><button class="p" onclick="exportData()">Visi lauki vienā failā</button><button onclick="exportEach()">Katrs lauks atsevišķi</button></div></div>
+ <div class="card"><div class="b">Atjaunot no faila</div>
+ <div class="mut" style="margin:4px 0 8px">Ielasīt iepriekš saglabātu failu. Var apvienot ar esošajiem datiem vai tos aizvietot.</div>
+ <input type="file" id="imp" accept=".json,application/json"><div class="row"><button onclick="importData('merge')">Apvienot</button><button class="d" onclick="importData('replace')">Aizvietot visu</button></div></div>
+ <div class="mut">${esc(msg)}</div>
+ <div class="card mut">Ieteikums: reizi nedēļā vai pēc svarīga darba saglabājiet kopiju Drive. Ja pārlūka dati tiek dzēsti vai ierīce tiek nomainīta, bez kopijas dati pazustu.</div>`;
+}
+
+async function saveFile(name,text){
+ const blob=new Blob([text],{type:'application/json'});
+ try{if(window.claude){const d=await window.claude.use('downloads');if(d){await d.save({filename:name,data:blob});return true}}}catch(e){if(e&&e.code==='declined')return false}
+ try{const f=new File([blob],name,{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return true}}catch(e){if(e&&e.name==='AbortError')return false}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();return true;
+}
+function pack(fids){
+ const fs=db.fields.filter(f=>!fids||fids.includes(f.id));
+ return JSON.stringify({app:'lauku-darbi',version:1,exported:new Date().toISOString(),fields:fs,jobs:db.jobs.filter(j=>fs.some(f=>f.id===j.field))},null,1);
+}
+const safe=s=>s.replace(/[^\p{L}\p{N}_-]+/gu,'_');
+async function exportData(fid){
+ const f=fid&&db.fields.find(x=>x.id===fid);
+ const ok=await saveFile(f?`lauks-${safe(f.name)}-${today()}.json`:`lauku-darbi-${today()}.json`,pack(fid?[fid]:null));
+ if(ok&&!fid){localStorage.setItem(KEY+'_last',new Date().toLocaleString('lv-LV'));msg='Kopija sagatavota.'}
+ if(tab==='kopija'&&!view)render();
+}
+async function exportEach(){
+ for(const f of db.fields){const ok=await saveFile(`lauks-${safe(f.name)}-${today()}.json`,pack([f.id]));if(!ok)break}
+}
+function importData(mode){
+ const file=$('#imp').files[0];if(!file){msg='Izvēlieties failu.';render();return}
+ const r=new FileReader();
+ r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.fields)||!Array.isArray(d.jobs))throw 0;
+  if(mode==='replace'){if(!confirm('Visi pašreizējie dati tiks aizvietoti. Turpināt?'))return;db={fields:d.fields,jobs:d.jobs}}
+  else{d.fields.forEach(f=>{if(!db.fields.some(x=>x.id===f.id))db.fields.push(f)});d.jobs.forEach(j=>{if(!db.jobs.some(x=>x.id===j.id))db.jobs.push(j)})}
+  save();msg='Ielasīti: '+d.fields.length+' lauki, '+d.jobs.length+' darbi.'}catch(e){msg='Fails nav derīgs.'}render()};
+ r.readAsText(file);
+}
+
+
+/* ===== Karte un SHP imports ===== */
+let map,lyF,lyI,lyMe,imp=[],mmsg='',mapFit=true;
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('lauku',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function idbSet(k,v){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction('k','readwrite');t.objectStore('k').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+async function idbGet(k){const d=await idb();return new Promise((res,rej)=>{const q=d.transaction('k').objectStore('k').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+idbGet('imp').then(x=>{if(x){imp=x;if(map)drawMap()}}).catch(()=>{});
+
+function lks2ll(E,N){ /* LKS-92 (EPSG:3059) -> WGS84 */
+ const a=6378137,f=1/298.257222101,k0=0.9996,e2=2*f-f*f,ep2=e2/(1-e2);
+ const x=E-500000,y=N+6000000,M=y/k0,mu=M/(a*(1-e2/4-3*e2*e2/64-5*e2**3/256));
+ const e1=(1-Math.sqrt(1-e2))/(1+Math.sqrt(1-e2));
+ const ph=mu+(3*e1/2-27*e1**3/32)*Math.sin(2*mu)+(21*e1*e1/16-55*e1**4/32)*Math.sin(4*mu)+(151*e1**3/96)*Math.sin(6*mu)+(1097*e1**4/512)*Math.sin(8*mu);
+ const s=Math.sin(ph),c=Math.cos(ph),t=Math.tan(ph),C=ep2*c*c,T=t*t,N1=a/Math.sqrt(1-e2*s*s),R=a*(1-e2)/Math.pow(1-e2*s*s,1.5),D=x/(N1*k0);
+ const lat=ph-(N1*t/R)*(D*D/2-(5+3*T+10*C-4*C*C-9*ep2)*D**4/24+(61+90*T+298*C+45*T*T-252*ep2-3*C*C)*D**6/720);
+ const lon=(D-(1+2*T+C)*D**3/6+(5-2*C+28*T-3*C*C+8*ep2+24*T*T)*D**5/120)/c;
+ return [lat*180/Math.PI,24+lon*180/Math.PI];
+}
+function parseShp(buf){
+ const v=new DataView(buf),out=[];let o=100;
+ while(o+8<=buf.byteLength){
+  const len=v.getInt32(o+4,false)*2,s=o+8;o=s+len;
+  const t=v.getInt32(s,true);
+  if(t!==5&&t!==15&&t!==25){out.push(null);continue}
+  const np=v.getInt32(s+36,true),pt=v.getInt32(s+40,true),parts=[];
+  for(let i=0;i<np;i++)parts.push(v.getInt32(s+44+4*i,true));
+  const ps=s+44+4*np,rings=[];
+  for(let i=0;i<np;i++){const a=parts[i],b=i+1<np?parts[i+1]:pt,r=[];
+   for(let k=a;k<b;k++)r.push([v.getFloat64(ps+16*k,true),v.getFloat64(ps+16*k+8,true)]);rings.push(r)}
+  out.push(rings);
+ }
+ return out;
+}
+function parseDbf(buf){
+ const v=new DataView(buf),n=v.getUint32(4,true),hl=v.getUint16(8,true),rl=v.getUint16(10,true);
+ let enc='utf-8';try{new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(e){enc='windows-1257'}
+ const dec=new TextDecoder(enc),fl=[];
+ for(let o=32;o<hl-1&&v.getUint8(o)!==13;o+=32)fl.push({n:dec.decode(new Uint8Array(buf,o,11)).replace(/\0.*$/,'').trim(),l:v.getUint8(o+16)});
+ const rows=[];
+ for(let i=0;i<n;i++){let o=hl+i*rl+1;const r={};for(const f of fl){r[f.n]=dec.decode(new Uint8Array(buf,o,f.l)).trim();o+=f.l}rows.push(r)}
+ return rows;
+}
+async function loadShape(files){
+ const set={};
+ const take=(name,buf)=>{const m=name.match(/([^\/\\]+)\.(\w+)$/);if(!m||name.includes('__MACOSX'))return;(set[m[1]]=set[m[1]]||{})[m[2].toLowerCase()]=buf};
+ for(const f of files){
+  if(/\.zip$/i.test(f.name)){
+   if(typeof JSZip==='undefined')throw new Error('ZIP bibliotēka neielādējās (vajag internetu).');
+   const z=await JSZip.loadAsync(await f.arrayBuffer());
+   for(const n of Object.keys(z.files))if(!z.files[n].dir)take(n,await z.files[n].async('arraybuffer'));
+  }else take(f.name,await f.arrayBuffer());
+ }
+ const k=Object.keys(set).find(k=>set[k].shp||set[k].json||set[k].geojson);
+ if(!k)throw new Error('Nav atrasts .shp vai .geojson fails.');
+ const S=set[k],items=[];
+ if(S.shp){const g=parseShp(S.shp),a=S.dbf?parseDbf(S.dbf):[];g.forEach((r,i)=>{if(r&&r.length)items.push({r,p:a[i]||{}})})}
+ else{const j=JSON.parse(new TextDecoder().decode(S.json||S.geojson));
+  (j.features||[]).forEach(ft=>{const g=ft.geometry;if(!g)return;
+   const polys=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[],r=[];
+   polys.forEach(pl=>pl.forEach(x=>r.push(x.map(c=>[c[0],c[1]]))));
+   if(r.length)items.push({r,p:ft.properties||{}})})}
+ if(!items.length)throw new Error('Failā nav daudzstūru (kontūru).');
+ const proj=items.some(it=>Math.abs(it.r[0][0][0])>180);
+ const out=items.map(it=>({g:it.r.map(r=>r.map(p=>{const q=proj?lks2ll(p[0],p[1]):[p[1],p[0]];return[+q[0].toFixed(6),+q[1].toFixed(6)]})),p:it.p}));
+ const c=out[0].g[0][0];
+ if(c[0]<50||c[0]>62||c[1]<18||c[1]>32)throw new Error('Koordinātes neatrodas Latvijā; iespējams, fails ir citā projekcijā.');
+ imp=out;
+ try{await idbSet('imp',imp)}catch(e){}
+}
+async function onShp(files){
+ if(!files.length)return;
+ mmsg='Ielasa…';render();
+ try{await loadShape([...files]);mapFit=true;
+  mmsg='Ielādētas '+imp.length+' kontūras. Pieskarieties kontūrai, lai pievienotu to kā lauku.'+(imp.length>3000?' Kontūru ir ļoti daudz, karte var darboties lēni.':'')}
+ catch(e){mmsg='Kļūda: '+(e.message||e)}
+ document.getElementById('shpf').value='';render();
+}
+async function clearImp(){
+ if(!confirm('Notīrīt ielādētās kontūras? Jau pievienotie lauki paliks.'))return;
+ imp=[];try{await idbSet('imp',[])}catch(e){}mmsg='';render();
+}
+function areaHa(g){
+ const la0=g[0][0][0],lo0=g[0][0][1],kx=111320*Math.cos(la0*Math.PI/180),ky=110574;let s=0;
+ g.forEach(r=>{for(let i=0;i<r.length;i++){const a=r[i],b=r[(i+1)%r.length];
+  s+=((a[1]-lo0)*kx)*((b[0]-la0)*ky)-((b[1]-lo0)*kx)*((a[0]-la0)*ky)}});
+ return Math.abs(s)/2/10000;
+}
+function centroid(g){const r=g[0];return[r.reduce((s,q)=>s+q[0],0)/r.length,r.reduce((s,q)=>s+q[1],0)/r.length]}
+function pip(pt,g){let c=false;g.forEach(r=>{for(let i=0,j=r.length-1;i<r.length;j=i++){const a=r[i],b=r[j];
+ if((a[1]>pt.lon)!==(b[1]>pt.lon)&&pt.lat<(b[0]-a[0])*(pt.lon-a[1])/(b[1]-a[1])+a[0])c=!c}});return c}
+function fdist(p,f){
+ if(f.geom){if(pip(p,f.geom))return 0;let m=1e12;f.geom.forEach(r=>r.forEach(q=>{const d=dist(p,{lat:q[0],lon:q[1]});if(d<m)m=d}));return m}
+ return f.lat!=null?dist(p,f):null;
+}
+function addFromImp(i){
+ const x=imp[i];map.closePopup();
+ const cand=Object.entries(x.p).find(([k,v])=>/nos|name|lauk/i.test(k)&&v);
+ const name=prompt('Lauka nosaukums:',cand?cand[1]:'Lauks '+(db.fields.length+1));
+ if(!name)return;
+ const c=centroid(x.g);
+ db.fields.push({id:uid(),name:name.trim(),area:areaHa(x.g).toFixed(2),crop:'',lat:c[0],lon:c[1],geom:x.g,src:x.p});
+ save();mmsg='Lauks „'+name.trim()+'” pievienots.';render();
+}
+function me(){locate(()=>{mmsg='';render();if(map)map.setView([pos.lat,pos.lon],16)})}
+function openFromMap(id){tab='lauki';openField(id)}
+let drw=null,lyD;
+const PAL=['#ffd23f','#3ddc97','#4cc9f0','#ff7aa2','#b388ff','#ff9f43','#9be564','#ff6b6b'];
+const fcol=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return PAL[h%PAL.length]};
+const TC={'Sēja':'#2e9e5b','Smidzināšana':'#2f7fd1','Apstrāde':'#8a6d3b','Mēslošana':'#d9822b','Novākšana':'#c9a100','Cits':'#7a7f87'};
+function startDraw(){drw={pts:[]};mmsg='';render()}
+function cancelDraw(){drw=null;if(lyD)lyD.clearLayers();render()}
+function undoPt(){if(drw&&drw.pts.length){drw.pts.pop();drawDraft()}}
+function gpsPt(){
+ if(!navigator.geolocation){alert('GPS nav pieejams.');return}
+ $('#ms').textContent='Nosaka vietu…';
+ navigator.geolocation.getCurrentPosition(p=>{drw.pts.push([+p.coords.latitude.toFixed(6),+p.coords.longitude.toFixed(6)]);
+  drawDraft('GPS punkts pievienots (±'+Math.round(p.coords.accuracy)+' m). ')},
+ e=>{$('#ms').textContent='Neizdevās noteikt vietu.'},{enableHighAccuracy:true,timeout:15000});
+}
+function perim(P){let s=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];s+=dist({lat:a[0],lon:a[1]},{lat:b[0],lon:b[1]})}return s}
+function drawDraft(pre){
+ if(!drw||!lyD)return;lyD.clearLayers();const P=drw.pts;
+ if(P.length>=3)L.polygon(P,{color:'#e0245e',weight:3,fillOpacity:.2,interactive:false}).addTo(lyD);
+ else if(P.length===2)L.polyline(P,{color:'#e0245e',weight:3,interactive:false}).addTo(lyD);
+ P.forEach(q=>L.circleMarker(q,{radius:6,color:'#fff',weight:2,fillColor:'#e0245e',fillOpacity:1,interactive:false}).addTo(lyD));
+ $('#ms').textContent=(pre||'')+P.length+' punkti'+(P.length>=3?' · '+areaHa([P]).toFixed(2)+' ha · apkārtmērs '+Math.round(perim(P))+' m':'. Pieskarieties kartei, lai pievienotu lauka stūri.');
+}
+function finishDraw(){
+ const P=drw.pts;if(P.length<3){alert('Vajag vismaz 3 punktus.');return}
+ const name=prompt('Lauka nosaukums:','Lauks '+(db.fields.length+1));if(!name)return;
+ const c=centroid([P]);
+ db.fields.push({id:uid(),name:name.trim(),area:areaHa([P]).toFixed(2),crop:'',lat:c[0],lon:c[1],geom:[P]});
+ save();drw=null;lyD.clearLayers();mmsg='Lauks „'+name.trim()+'” saglabāts.';render();
+}
+function mapRender(){
+ const ms=document.getElementById('ms');
+ document.getElementById('mr').classList.toggle('hide',!!drw);document.getElementById('dt').classList.toggle('hide',!drw);
+ if(typeof L==='undefined'){ms.textContent='Kartes bibliotēka neielādējās. Vajadzīgs internets.';return}
+ ms.textContent=drw?'':(mmsg||gpsMsg);
+ if(!map){
+  map=L.map('map',{preferCanvas:true}).setView([56.9,24.6],8);
+  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'});
+  const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Esri, Maxar, Earthstar Geographics'});
+  osm.addTo(map);L.control.layers({'Karte':osm,'Satelīts':sat}).addTo(map);
+  lyI=L.featureGroup().addTo(map);lyF=L.featureGroup().addTo(map);lyMe=L.layerGroup().addTo(map);lyD=L.featureGroup().addTo(map);
+  map.on('click',e=>{if(drw){drw.pts.push([+e.latlng.lat.toFixed(6),+e.latlng.lng.toFixed(6)]);drawDraft()}});
+  const Loc=L.Control.extend({onAdd(){const b=L.DomUtil.create('button');b.textContent='◎';b.title='Mana vieta';
+   b.style.cssText='width:44px;height:44px;font-size:24px;border-radius:50%;padding:0;background:#fff;color:#1c7c3b;border:0;box-shadow:0 1px 6px rgba(0,0,0,.4)';
+   L.DomEvent.disableClickPropagation(b);b.onclick=me;return b}});
+  new Loc({position:'topleft'}).addTo(map);
+ }
+ setTimeout(()=>{map.invalidateSize();drawMap(mapFit);mapFit=false;drawDraft()},30);
+}
+function drawMap(fit){
+ if(!map)return;
+ lyI.clearLayers();lyF.clearLayers();lyMe.clearLayers();
+ imp.forEach((x,i)=>{
+  L.polygon(x.g,{color:'#ff9800',weight:1.5,dashArray:'5 4',fillOpacity:.08,interactive:!drw}).addTo(lyI).bindPopup(()=>{
+   const rows=Object.entries(x.p).slice(0,8).map(([k,v])=>'<b>'+esc(k)+'</b>: '+esc(v)).join('<br>');
+   return '<div style="max-width:220px">'+(rows||'Nav atribūtu')+'<br><b>Platība:</b> '+areaHa(x.g).toFixed(2)+' ha<br><button class="p" onclick="addFromImp('+i+')">Pievienot kā lauku</button></div>'});
+ });
+ db.fields.forEach(f=>{
+  let l=null;
+  if(f.geom)l=L.polygon(f.geom,{color:fcol(f.id),weight:3,fillColor:fcol(f.id),fillOpacity:.45,interactive:!drw}).addTo(lyF).bindTooltip(f.name,{permanent:true,direction:'center',className:'ft'});
+  else if(f.lat!=null)l=L.circleMarker([f.lat,f.lon],{radius:9,color:'#fff',weight:2,fillColor:fcol(f.id),fillOpacity:.95,interactive:!drw}).addTo(lyF).bindTooltip(f.name);
+  if(l)l.on('click',()=>openFromMap(f.id));
+ });
+ if(pos){L.circle([pos.lat,pos.lon],{radius:pos.acc||10,weight:1}).addTo(lyMe);
+  L.circleMarker([pos.lat,pos.lon],{radius:7,color:'#fff',weight:2,fillColor:'#1a73e8',fillOpacity:1}).addTo(lyMe)}
+ if(fit){let b=null;[lyF,lyI].forEach(g=>{const x=g.getBounds();if(x.isValid())b=b?b.extend(x):x});if(b)map.fitBounds(b.pad(.1))}
+}
+
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;view=null;msg='';render()});
+render();
+</script>
+</body>
+</html>
