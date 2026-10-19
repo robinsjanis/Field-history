@@ -41,6 +41,9 @@ nav span{font-size:11px}
 #dt{position:absolute;left:0;right:0;bottom:0;z-index:5;justify-content:center;flex-wrap:nowrap;gap:8px;background:var(--card);padding:8px 10px;border-radius:18px 18px 0 0;box-shadow:0 -4px 18px rgba(0,0,0,.25)}
 #mapwrap.drawing .leaflet-bottom{bottom:68px}
 .leaflet-layer.sat img.leaflet-tile{mix-blend-mode:plus-lighter}
+.lt{display:flex;background:#fff;border-radius:999px;box-shadow:0 1px 6px rgba(0,0,0,.4);overflow:hidden}
+.lt button{background:#fff;color:#111;border-radius:0;min-height:40px;padding:8px 14px;font-size:14px}
+.lt button.on{background:#111;color:#fff}
 .vx{background:#fff;border:4px solid #e0245e;border-radius:50%;box-shadow:0 1px 5px rgba(0,0,0,.5)}
 #dt.hide{display:none}
 #dt button{flex:1;min-height:48px;padding:8px 6px;font-size:15px}
@@ -53,6 +56,7 @@ nav span{font-size:11px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <main id="app"></main>
@@ -77,7 +81,7 @@ let season=(()=>{try{return localStorage.getItem(KEY+'_season')}catch(e){}})()||
 const cropOf=f=>(f.crops&&f.crops[season])||'';
 const inSeason=j=>(j.date||'').slice(0,4)===season;
 const defDate=()=>season===String(new Date().getFullYear())?today():season+today().slice(4);
-function migrate(){db.seasons=db.seasons||[];db.fields.forEach(f=>{if(f.crop&&!f.crops)f.crops={[season]:f.crop};if(!f.crops)f.crops={};delete f.crop})}
+function migrate(){db.seasons=db.seasons||[];db.del=db.del||{};db.fields.forEach(f=>{if(f.crop&&!f.crops)f.crops={[season]:f.crop};if(!f.crops)f.crops={};delete f.crop})}
 migrate();
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
 function seasons(){const y=new Set([String(new Date().getFullYear()),season,...(db.seasons||[])]);
@@ -95,7 +99,8 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const today=()=>new Date().toISOString().slice(0,10);
-function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){msg='Neizdevās saglabāt ierīcē!'}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){msg='Neizdevās saglabāt ierīcē!'}}
+function save(){stamp();persist();if(gTok)gSchedule()}
 function dist(a,b){const R=6371000,t=x=>x*Math.PI/180,dl=t(b.lat-a.lat),dn=t(b.lon-a.lon);
  const h=Math.sin(dl/2)**2+Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 const fmt=m=>m<1?'jūs esat šeit':m<1000?Math.round(m)+' m':(m/1000).toFixed(1)+' km';
@@ -187,7 +192,7 @@ function saveField(id){
 function delField(id){
  const n=db.jobs.filter(j=>j.field===id).length;
  if(!confirm('Dzēst lauku'+(n?' un tā '+n+' darbus':'')+'?'))return;
- db.fields=db.fields.filter(f=>f.id!==id);db.jobs=db.jobs.filter(j=>j.field!==id);save();view=null;render();
+ tomb([id,...db.jobs.filter(j=>j.field===id).map(j=>j.id)]);db.fields=db.fields.filter(f=>f.id!==id);db.jobs=db.jobs.filter(j=>j.field!==id);save();view=null;render();
 }
 
 function editJob(id,fid){
@@ -210,7 +215,7 @@ function saveJob(id){
  if(id)Object.assign(db.jobs.find(x=>x.id===id),o);else db.jobs.push({id:uid(),...o});
  save();back();
 }
-function delJob(id){if(confirm('Dzēst šo darbu?')){db.jobs=db.jobs.filter(j=>j.id!==id);save();render()}}
+function delJob(id){if(confirm('Dzēst šo darbu?')){tomb([id]);db.jobs=db.jobs.filter(j=>j.id!==id);save();render()}}
 
 function vDarbi(){
  let J=db.jobs.filter(j=>inSeason(j)&&(!filt.f||j.field===filt.f)&&(!filt.t||j.type===filt.t)).sort((a,b)=>b.date.localeCompare(a.date));
@@ -224,6 +229,10 @@ function vKopija(){
  const last=localStorage.getItem(KEY+'_last');
  return `<h1>Rezerves kopija</h1>
  <div class="card"><div class="b">Dati ir šajā ierīcē</div><div class="mut">${db.fields.length} lauki, ${db.jobs.length} darbi.${last?' Pēdējā kopija: '+esc(last):' Kopija vēl nav veidota.'}</div></div>
+ <div class="card"><div class="b">Automātiska saglabāšana (Google Drive)</div>
+ <div class="mut" style="margin:4px 0 8px">Dati tiek saglabāti jūsu Drive failā lauku-darbi.json pēc katra saglabājuma un sinhronizēti starp ierīcēm. Lietotne redz tikai pati izveidoto failu.</div>
+ <div class="row">${gTok?'<button class="p" onclick="gSync()">Sinhronizēt tagad</button><button class="d" onclick="gDisconnect()">Atvienot</button>':'<button class="p" onclick="gConnect()">Pieslēgties Google Drive</button>'}</div>
+ <div class="mut" style="margin-top:8px">${esc(gMsg)||'Nav pieslēgts.'}</div></div>
  <div class="card"><div class="b">Atskaite Excel</div>
  <div class="mut" style="margin:4px 0 8px">Darbi pa laukiem: katram laukam sava lapa un kopsavilkuma lapa (datums, darba veids, līdzeklis, deva, kultūra, piezīmes).</div>
  <div class="row"><button class="p" onclick="exportXlsx(null,false)">Sezona ${season}</button><button onclick="exportXlsx(null,true)">Visas sezonas</button></div></div>
@@ -244,6 +253,82 @@ async function saveFile(name,text,type){
   if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return true}}catch(e){if(e&&e.name==='AbortError')return false}
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();return true;
 }
+/* ===== Google Drive sinhronizācija ===== */
+const GCID='662837588853-4ldt8q3ef51qcul0tnfg86rrapc9264p.apps.googleusercontent.com',GSC='https://www.googleapis.com/auth/drive.file',GFN='lauku-darbi.json';
+let gTok=null,gExp=0,gFile=null,gTC=null,gRes=null,gRej=null,gMsg='',gBusy=false,gPend=false,gT=null;
+const lastSer={};
+const ser=x=>{const{u,...o}=x;return JSON.stringify(o)};
+function stamp(){const n=Date.now();[...db.fields,...db.jobs].forEach(x=>{const t=ser(x);if(lastSer[x.id]!==t){x.u=n;lastSer[x.id]=t}})}
+function initSer(){[...db.fields,...db.jobs].forEach(x=>lastSer[x.id]=ser(x))}
+function tomb(ids){db.del=db.del||{};const n=Date.now();ids.forEach(i=>db.del[i]=n)}
+initSer();
+function mergeDb(r){
+ const a=db.del||{},b=r.del||{},del={};
+ new Set([...Object.keys(a),...Object.keys(b)]).forEach(k=>del[k]=Math.max(a[k]||0,b[k]||0));
+ const mg=(x,y)=>{const m=new Map();[...(x||[]),...(y||[])].forEach(o=>{const c=m.get(o.id);if(!c||(o.u||0)>(c.u||0))m.set(o.id,o)});
+  return[...m.values()].filter(o=>!(del[o.id]>(o.u||0)))};
+ db={fields:mg(db.fields,r.fields),jobs:mg(db.jobs,r.jobs),seasons:[...new Set([...(db.seasons||[]),...(r.seasons||[])])],del};
+ migrate();initSer();persist();
+}
+const gUi=()=>{if(tab==='kopija'&&!view)render()};
+function gAuth(silent){return new Promise((res,rej)=>{
+ if(gTok&&Date.now()<gExp-60000)return res(gTok);
+ if(typeof google==='undefined'||!google.accounts||!google.accounts.oauth2)return rej(new Error('Google bibliotēka neielādējās (vajag internetu).'));
+ gRes=res;gRej=rej;
+ if(!gTC)gTC=google.accounts.oauth2.initTokenClient({client_id:GCID,scope:GSC,
+  callback:r=>{if(r.error)return gRej(new Error(r.error));gTok=r.access_token;gExp=Date.now()+(+r.expires_in||3600)*1000;gRes(gTok)},
+  error_callback:e=>gRej(new Error(e&&e.type==='popup_closed'?'Pieteikšanās atcelta.':'Pieteikšanās neizdevās ('+((e&&e.type)||'kļūda')+').'))});
+ gTC.requestAccessToken({prompt:silent?'none':''});
+})}
+async function gApi(url,opt){
+ const t=await gAuth(true);
+ const r=await fetch(url,{...opt,headers:{Authorization:'Bearer '+t,...((opt&&opt.headers)||{})}});
+ if(r.status===401){gTok=null;throw new Error('Pieteikšanās beigusies, nospiediet „Pieslēgties".')}
+ if(!r.ok)throw new Error('Drive kļūda '+r.status);
+ return r;
+}
+async function gFind(){
+ const q=encodeURIComponent("name='"+GFN+"' and trashed=false");
+ const j=await(await gApi('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,modifiedTime)&spaces=drive')).json();
+ return(j.files&&j.files[0])||null;
+}
+async function gPut(){
+ const body=JSON.stringify({app:'lauku-darbi',version:2,saved:new Date().toISOString(),fields:db.fields,jobs:db.jobs,seasons:db.seasons,del:db.del});
+ if(!gFile){const f=await gFind();if(f)gFile=f.id}
+ if(gFile){await gApi('https://www.googleapis.com/upload/drive/v3/files/'+gFile+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body});return}
+ const b='lauku'+Date.now(),meta=JSON.stringify({name:GFN,mimeType:'application/json'});
+ const mp='--'+b+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+meta+'\r\n--'+b+'\r\nContent-Type: application/json\r\n\r\n'+body+'\r\n--'+b+'--';
+ const r=await gApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body:mp});
+ gFile=(await r.json()).id;
+}
+async function gSync(){
+ if(gBusy){gPend=true;return}
+ gBusy=true;gMsg='Sinhronizē…';gUi();
+ try{
+  const f=await gFind();
+  if(f){gFile=f.id;const d=await(await gApi('https://www.googleapis.com/drive/v3/files/'+f.id+'?alt=media')).json();
+   if(Array.isArray(d.fields)&&Array.isArray(d.jobs)){mergeDb(d);if(!view&&!drw)render()}}
+  await gPut();
+  gMsg='Saglabāts Drive: '+new Date().toLocaleTimeString('lv-LV');
+  try{localStorage.setItem(KEY+'_drv','1')}catch(e){}
+ }catch(e){gMsg='Drive: '+(e.message||e)}
+ gBusy=false;gUi();
+ if(gPend){gPend=false;gSchedule()}
+}
+function gSchedule(){clearTimeout(gT);gT=setTimeout(gSync,3000)}
+async function gConnect(){
+ try{await gAuth(false);await gSync()}catch(e){gMsg='Drive: '+(e.message||e);gUi()}
+}
+function gDisconnect(){
+ try{if(gTok&&google.accounts.oauth2.revoke)google.accounts.oauth2.revoke(gTok)}catch(e){}
+ gTok=null;gFile=null;try{localStorage.removeItem(KEY+'_drv')}catch(e){}
+ gMsg='Atvienots. Dati ierīcē un Drive failā ir saglabāti.';gUi();
+}
+try{if(localStorage.getItem(KEY+'_drv')==='1'){
+ const f=()=>{document.removeEventListener('click',f,true);gAuth(true).then(()=>gSync()).catch(()=>{gMsg='Drive nav pieslēgts šajā sesijā. Cilnē „Kopija" nospiediet „Pieslēgties".';gUi()})};
+ document.addEventListener('click',f,true);
+}}catch(e){}
+
 function xlName(n,used){
  const b=String(n||'Lauks').replace(/[\\\/\?\*\[\]:]/g,' ').trim().slice(0,31)||'Lauks';let x=b,i=2;
  while(used.has(x.toLowerCase())){const t=' '+i++;x=b.slice(0,31-t.length)+t}
@@ -473,7 +558,15 @@ function mapRender(){
   map=L.map('map',{preferCanvas:true}).setView([56.9,24.6],8);
   const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'});
   const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,className:'sat',attribution:'Esri, Maxar, Earthstar Geographics'});
-  osm.addTo(map);L.control.layers({'Karte':osm,'Satelīts':sat}).addTo(map);
+  const Lay=L.Control.extend({onAdd(){const d=L.DomUtil.create('div','lt');
+   [['osm','Karte'],['sat','Satelīts']].forEach(([k,t])=>{const b=L.DomUtil.create('button','',d);b.textContent=t;b.dataset.k=k;b.onclick=()=>setBase(k)});
+   L.DomEvent.disableClickPropagation(d);return d}});
+  const lay=new Lay({position:'topright'}).addTo(map);
+  const setBase=k=>{(k==='sat'?osm:sat).remove();(k==='sat'?sat:osm).addTo(map);
+   [...lay.getContainer().children].forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+   try{localStorage.setItem(KEY+'_base',k)}catch(e){}};
+  let sb='osm';try{sb=localStorage.getItem(KEY+'_base')==='sat'?'sat':'osm'}catch(e){}
+  setBase(sb);
   lyI=L.featureGroup().addTo(map);lyF=L.featureGroup().addTo(map);lyMe=L.layerGroup().addTo(map);lyD=L.featureGroup().addTo(map);
   map.on('click',e=>{if(drw){snap();addPt([+e.latlng.lat.toFixed(6),+e.latlng.lng.toFixed(6)]);drawDraft()}});
   const Loc=L.Control.extend({onAdd(){const b=L.DomUtil.create('button');b.textContent='◎';b.title='Mana vieta';
