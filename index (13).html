@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#5a3820">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lopu uzskaite</title>
+<style>
+:root{--bg:#ecdcc3;--sf:#faf3e6;--tx:#2e2016;--mu:#7a6550;--ln:#d6c0a0;--ac:#7a4a26;--acx:#fff;--ac2:#ecd6b4;--wa:#b3411c;--wb:#f8dccd;--hd:#5a3820;--hdt:#f6e9d4;--hl:#e3b878}
+@media (prefers-color-scheme:dark){:root{--bg:#1f1710;--sf:#2c2017;--tx:#f1e4d0;--mu:#b39f84;--ln:#47372b;--ac:#d9a066;--acx:#2a1a0c;--ac2:#40301f;--wa:#f0a070;--wb:#4a2a1a;--hd:#3b2616;--hdt:#f3e4cc;--hl:#e3b878}}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,sans-serif}
+header{padding:14px 14px 8px;position:sticky;top:0;background:var(--hd);color:var(--hdt);z-index:5;border-bottom:1px solid #0003}
+h1{font-size:1.15rem;margin:0 0 8px;display:flex;justify-content:space-between;align-items:center}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:10px;width:100%}
+button{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:8px 12px;cursor:pointer}
+button.p{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+button.d{color:var(--wa)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+#q{font-size:1.3rem;letter-spacing:.05em}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px}
+.chip{white-space:nowrap;border-radius:99px;padding:6px 12px;font-size:.9rem}
+.chip{background:#ffffff1f;border-color:#ffffff33;color:var(--hdt)}
+.chip.on{background:var(--hl);color:#3a2412;border-color:var(--hl)}
+.chip.wc.on{background:var(--wa);border-color:var(--wa);color:var(--acx)}
+header h1 button{background:#ffffff1f;border-color:#ffffff40;color:var(--hdt)}
+header label{color:var(--hdt)}
+main{padding:10px 14px 96px;max-width:720px;margin:auto}
+.cnt{color:var(--mu);font-size:.85rem;margin:4px 0 8px}
+.row{display:flex;align-items:center;gap:12px;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:10px 12px;margin-bottom:6px;cursor:pointer;width:100%;text-align:left}
+.num{font-size:1.7rem;font-weight:700;min-width:3.6ch;font-variant-numeric:tabular-nums}
+.pre{display:block;font-size:.75rem;color:var(--mu);font-weight:400}
+.meta{flex:1;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.b{font-size:.78rem;padding:2px 8px;border-radius:99px;background:var(--ac2);color:var(--ac)}
+.b.w{background:var(--wb);color:var(--wa)}
+.kg{color:var(--mu);font-size:.9rem;white-space:nowrap}
+dialog{overflow-y:auto;overscroll-behavior:contain;border:0;border-radius:14px;padding:0;background:var(--bg);color:var(--tx);width:min(560px,96vw);max-height:92vh}
+dialog::backdrop{background:#0008}
+.in{padding:16px}
+.in h2{margin:0;font-size:2rem}
+.fl{display:grid;gap:10px;margin:12px 0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px;margin:10px 0}
+.card h3{margin:0 0 8px;font-size:1rem}
+.big{font-size:1.5rem;font-weight:700;color:var(--ac)}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+td,th{padding:5px 4px;border-bottom:1px solid var(--ln);text-align:left}
+.bar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.top{position:sticky;top:0;margin:-16px -16px 8px;padding:10px 12px;background:var(--hd);color:var(--hdt);display:flex;justify-content:space-between;align-items:center;z-index:2}
+.top button{background:#ffffff1f;border-color:#ffffff40;color:var(--hdt)}
+#x,#mx,#ax{font-size:1.2rem;line-height:1;padding:8px 13px}
+details.nw summary{cursor:pointer;display:inline-block;background:var(--ac);color:var(--acx);border-radius:8px;padding:8px 14px;margin-bottom:8px}
+.bn{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--hd);border-top:1px solid #0003;padding-bottom:env(safe-area-inset-bottom,0px);z-index:6}
+.bn button{flex:1;border:0;border-radius:0;padding:14px 8px;background:none;font-weight:600;color:var(--hdt);opacity:.7}
+.bn button.on{opacity:1;box-shadow:inset 0 3px 0 var(--hl)}
+.kid{display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--ln);padding:2px 0}
+.lk{flex:1;text-align:left;border:0;background:none;padding:8px 0;border-radius:0}
+.mu{color:var(--mu);font-size:.9rem;margin:4px 0}
+.row.sel{outline:2px solid var(--ac)}
+@media(hover:hover){.row:hover{border-color:var(--ac)}}
+@media(max-width:640px){dialog{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;margin:0}}
+@media(min-width:700px){
+ main{max-width:980px}
+ #list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:8px}
+ #list .row{margin:0}
+ #list .cnt{grid-column:1/-1;margin:6px 0 0}
+}
+@media(min-width:1000px){
+ body{padding-left:96px}
+ .bn{top:0;bottom:0;right:auto;width:96px;flex-direction:column;justify-content:flex-start;border-top:0;border-right:1px solid #0003;padding:12px 0 0}
+ .bn button{flex:none;padding:18px 6px}
+ .bn button.on{box-shadow:inset 3px 0 0 var(--hl);background:#ffffff1a}
+ header{padding:14px 24px 10px}
+ h1{justify-content:flex-start;gap:18px}
+ main{max-width:none;margin:0;padding:16px 24px 40px}
+ #q{max-width:380px}
+ .chips{flex-wrap:wrap;overflow:visible}
+ #flt .bar{max-width:520px}
+ #wmain{display:grid;grid-template-columns:minmax(380px,460px) 1fr;gap:16px;align-items:start}
+ #wmain .card{margin:0}
+ body.pan{padding-right:500px}
+ #dlg.dock{overflow-y:auto;position:fixed;inset:0 0 0 auto;margin:0;width:500px;max-width:none;height:100dvh;max-height:none;border-radius:0;border-left:1px solid var(--ln);box-shadow:-6px 0 24px #0003}
+}
+.empty{text-align:center;color:var(--mu);padding:30px 10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Lopu uzskaite <span><button id="add">+ Pievienot</button> <button id="menu">⋮</button></span></h1>
+  <div id="flt"><input id="q" type="search" inputmode="numeric" placeholder="Pēdējie cipari, piem. 427" aria-label="Meklēt pēc numura">
+  <div class="chips" id="chips"></div>
+  <div class="bar" style="margin:4px 0 0;flex-wrap:wrap;align-items:center"><select id="fh" aria-label="Ganāmpulks" style="flex:1;min-width:140px;width:auto" hidden></select><select id="fdad" aria-label="Filtrs pēc tēva" style="flex:1;min-width:140px;width:auto"></select><label style="white-space:nowrap;font-size:.85rem"><input type="checkbox" id="gd" style="width:auto"> Grupēt</label></div></div>
+</header>
+<main id="lmain"><div class="cnt" id="cnt"></div><select id="bulk" hidden style="margin-bottom:8px"></select><div id="list"></div></main>
+<main id="wmain" hidden>
+  <div class="card"><h3>Svēršana</h3>
+    <div class="g2"><input type="date" id="sd" aria-label="Datums"><input id="sq" inputmode="numeric" placeholder="Lopa pēdējie cipari" aria-label="Lopa numurs"></div>
+    <div id="sres" style="margin-top:8px"></div>
+    <div id="ssel"></div>
+    <div class="g2" style="margin-top:8px"><input id="sk" type="number" inputmode="decimal" step="0.1" min="0" placeholder="Svars, kg" aria-label="Svars kg"><input id="sc" placeholder="Komentārs (nav obligāts)" aria-label="Komentārs"></div>
+    <div class="bar"><button class="p" id="ssave">Saglabāt svaru</button></div>
+    <div id="smsg" class="mu" role="status"></div>
+  </div>
+  <div class="card"><h3 id="sh"></h3><div id="slist"></div></div>
+</main>
+<nav class="bn"><button id="tl" class="on">Lopi</button><button id="tw">Svēršana</button></nav>
+
+<dialog id="dlg"><div class="in" id="det"></div></dialog>
+
+<dialog id="adlg"><div class="in">
+  <div class="top"><b style="font-size:1.1rem">Jauns lops</b><button id="ax" aria-label="Aizvērt">✕</button></div>
+  <div class="fl"><input id="an" placeholder="Numurs" aria-label="Numurs"><input id="aname" placeholder="Vārds (nav obligāts)" aria-label="Vārds">
+    <div class="g2"><select id="ac" aria-label="Kategorija"></select><input type="date" id="ab" aria-label="Dzimšanas datums"></div></div>
+  <div class="bar"><button class="p" id="asave">Pievienot</button><button id="acancel">Atcelt</button></div>
+</div></dialog>
+
+<dialog id="mdlg"><div class="in">
+  <div class="top"><b style="font-size:1.1rem">Dati</b><button id="mx" aria-label="Aizvērt">✕</button></div>
+  <div class="card"><b>Ielādēt CSV (lopu saraksts)</b>
+    <p style="margin:6px 0;color:var(--mu);font-size:.88rem">Der datu centra saraksts (kodējums tiek atpazīts pats). Ņem ID, vārdu, dzimumu, dzimšanas datumu un izmantošanu; kategorija tiek noteikta automātiski. Svari, piezīmes un pašu mainītās kategorijas netiek aizskartas, tāpēc sarakstu var ielādēt atkārtoti.</p>
+    <select id="defc"><option value="cits">Ja nav dzimuma: nenoteikta</option><option value="tele">Ja nav dzimuma: teļš</option><option value="govs">Ja nav dzimuma: govs</option></select>
+    <div class="bar"><input type="file" id="csv" accept=".csv,.txt,text/csv"></div>
+  </div>
+  <div class="card"><b>Ganāmpulki</b>
+    <p style="margin:6px 0;color:var(--mu);font-size:.88rem">Izveido ganāmpulkus (piem. pa ganībām vai bulļiem) un katram norādi bulli. Bullim kartītē jābūt atzīmētam «Ir tēvs». Jauna teļa formā bullis tiek ielikts pats, un lietotne brīdina, ja ganāmpulka bullis ir govs radinieks.</p>
+    <div id="herds"></div>
+    <div class="bar" style="flex-wrap:nowrap"><input id="newherd" placeholder="Jauns ganāmpulks"><button id="addherd" class="p">Pievienot</button></div>
+  </div>
+  <div class="card"><b>Kategorijas</b>
+    <p style="margin:6px 0;color:var(--mu);font-size:.88rem">Pārsauc, pārkārto vai dzēs kategorijas, vai pievieno savas. Katram lopam kategoriju izvēlas tā kartītē. Dzēstas kategorijas lopi kļūst «Nenoteikti».</p>
+    <div id="cats"></div>
+    <div class="bar" style="flex-wrap:nowrap"><input id="newcat" placeholder="Jauna kategorija"><button id="addcat" class="p">Pievienot</button></div>
+  </div>
+  <div class="card"><b>Rezerves kopija</b>
+    <p style="margin:6px 0;color:var(--mu);font-size:.88rem">Dati glabājas šajā ierīcē un pārlūkā. Regulāri saglabā kopiju, lai nepazustu.</p>
+    <div class="bar"><button id="exp">Lejupielādēt kopiju</button><button id="impb">Ielādēt kopiju</button><input type="file" id="imp" accept=".json" hidden></div>
+  </div>
+  <div class="card"><b>Google Drive kopija</b>
+    <p style="margin:6px 0;color:var(--mu);font-size:.88rem">Saglabā visus datus savā Google Drive failā «lopu-kopija.json» un atjauno tos jebkurā ierīcē. Pirmajā reizē Google lūgs pieslēgties un atļaut piekļuvi.</p>
+        <div class="bar"><button id="gsave" class="p">Saglabāt Drive</button><button id="gload">Atjaunot no Drive</button></div>
+    <div id="gst" class="mu" role="status"></div><div id="glast" class="mu"></div>
+    
+  </div>
+  <div class="bar"><button id="mclose" class="p">Aizvērt</button></div>
+</div></dialog>
+
+<script>
+const $=s=>document.querySelector(s);
+const KEY='lopi_v1';
+let A=[];try{A=JSON.parse(localStorage.getItem(KEY))||[]}catch(e){}
+const DEFC=[{id:'tele',name:'Teļš'},{id:'bullen',name:'Bullēns'},{id:'telite',name:'Telīte'},{id:'govs',name:'Govs'},{id:'bullis',name:'Bullis'}];
+let CATS;try{CATS=JSON.parse(localStorage.getItem('lopi_cats'))}catch(e){}
+if(!Array.isArray(CATS)||!CATS.length)CATS=DEFC.map(c=>({...c}));
+const saveC=()=>{try{localStorage.setItem('lopi_cats',JSON.stringify(CATS))}catch(e){}};
+let HERDS=[];try{HERDS=JSON.parse(localStorage.getItem('lopi_herds'))||[]}catch(e){}
+if(!Array.isArray(HERDS))HERDS=[];
+const saveH=()=>{try{localStorage.setItem('lopi_herds',JSON.stringify(HERDS))}catch(e){}};
+A.forEach(a=>{if(a.s==='V'&&a.c==='tele'&&!a.m)a.c='bullen'});
+const catName=id=>(CATS.find(c=>c.id===id)||{name:'Nenoteikts'}).name;
+const catOpts=()=>'<option value="cits">Nenoteikts</option>'+CATS.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+let TAB='list',SEL=null,SD='',F='all',cur=null,hist=[],FD='',FH='',VIS=[],GD=false,editB='';
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(A))}catch(e){alert('Neizdevās saglabāt datus pārlūkā.')}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const needTag=a=>/jaun/i.test(a.note||'')&&/krot/i.test(a.note||'');
+const sw=a=>[...(a.w||[])].sort((x,y)=>x.d<y.d?-1:1);
+const mons=b=>{const d=new Date(b),n=new Date();return (n.getFullYear()-d.getFullYear())*12+n.getMonth()-d.getMonth()-(n.getDate()<d.getDate()?1:0)};
+const ageTxt=b=>{const m=mons(b);return m>=12?Math.floor(m/12)+' g.'+(m%12?' '+m%12+' mēn.':''):m+' mēn.'};
+const isoD=s=>{const m=/^(\d\d?)\.(\d\d?)\.(\d{4})$/.exec(s||'');return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:''};
+function autoCat(s,b,u){const m=b?mons(b):null;
+  if(s==='V')return m===null?'cits':m<12?'bullen':'bullis';
+  if(s==='S'){if(u)return'govs';if(m===null)return'cits';return m<12?'tele':m<24?'telite':'govs'}
+  return''}
+const fmt=n=>n.toLocaleString('lv-LV',{maximumFractionDigits:2});
+const days=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+function adg(a){const w=sw(a);if(w.length<2)return null;
+  const f=w[0],l=w[w.length-1],p=w[w.length-2];
+  const dt=days(f.d,l.d),dl=days(p.d,l.d);
+  return{tot:dt>0?(l.kg-f.kg)/dt:null,dt,last:dl>0?(l.kg-p.kg)/dl:null,dl,diff:l.kg-f.kg}}
+const FL=()=>[['all','Visi'],...CATS.flatMap(c=>c.id==='govs'?[[c.id,c.name],['govsK',c.name+' – bijis teļš'],['govsN',c.name+' – nav bijis teļš']]:[[c.id,c.name]]),...(A.some(test.cits)?[['cits','Nenoteikts']]:[]),['tag','Jauna krotālija']];
+const test=new Proxy({},{get:(_,k)=>k==='all'?()=>1:k==='tag'?needTag:k==='cits'?a=>!CATS.some(c=>c.id===a.c):k==='govsK'?a=>a.c==='govs'&&a.k===true:k==='govsN'?a=>a.c==='govs'&&a.k!==true:a=>a.c===k});
+
+function render(){
+  const kc={},dads={};A.forEach(a=>{if(a.mom)kc[a.mom]=(kc[a.mom]||0)+1;if(a.dad)dads[a.dad]=(dads[a.dad]||0)+1});
+  if(FD&&FD!=='__none'&&!dads[FD])FD='';
+  if(FH&&FH!=='__none'&&!HERDS.some(h=>h.id===FH))FH='';
+  $('#fh').hidden=!HERDS.length;
+  $('#fh').innerHTML='<option value="">Visi ganāmpulki</option><option value="__none">Bez ganāmpulka</option>'+HERDS.map(h=>`<option value="${esc(h.id)}">${esc(h.name)} (${A.filter(a=>a.h===h.id).length})</option>`).join('');$('#fh').value=FH;
+  const base=A.filter(a=>!FH||(FH==='__none'?!HERDS.some(h=>h.id===a.h):a.h===FH));
+  $('#fdad').innerHTML='<option value="">Visi tēvi</option><option value="__none">Tēvs nav norādīts</option>'+Object.keys(dads).sort().map(d=>`<option value="${esc(d)}">Tēvs: ${esc(parLabel(d))} (${dads[d]})</option>`).join('');$('#fdad').value=FD;
+  $('#chips').innerHTML=FL().map(([k,t])=>`<button class="chip ${k==='tag'?'wc':''} ${F===k?'on':''}" data-f="${k}">${t} (${base.filter(test[k]).length})</button>`).join('');
+  const q=$('#q').value.replace(/\D/g,'');
+  let L=base.filter(test[F]);if(FD)L=L.filter(a=>FD==='__none'?!a.dad:a.dad===FD);
+  if(q)L=L.filter(a=>a.n.includes(q)).sort((x,y)=>(y.n.endsWith(q))-(x.n.endsWith(q)));
+  else L.sort((x,y)=>x.n.slice(-3).localeCompare(y.n.slice(-3))||x.n.localeCompare(y.n));
+  if(GD)L.sort((x,y)=>(x.dad||'~').localeCompare(y.dad||'~')||x.n.slice(-3).localeCompare(y.n.slice(-3)));
+  VIS=L;$('#bulk').hidden=!HERDS.length||!L.length;
+  $('#bulk').innerHTML=`<option value="">Pārvietot rādītos lopus (${L.length}) uz ganāmpulku…</option><option value="__none">Bez ganāmpulka</option>`+HERDS.map(h=>`<option value="${esc(h.id)}">${esc(h.name)}</option>`).join('');
+  $('#cnt').textContent=`Rāda ${L.length} no ${A.length}`;
+  $('#list').innerHTML=L.length?L.map((a,i)=>{
+    const w=sw(a),lw=w[w.length-1];
+    const gh=GD&&(i===0||(L[i-1].dad||'')!==(a.dad||''))?`<div class="cnt" style="margin-top:10px"><b>Tēvs: ${a.dad?parLabelH(a.dad):'nav norādīts'} (${L.filter(x=>(x.dad||'')===(a.dad||'')).length})</b></div>`:'';
+    return gh+`<button class="row${$('#dlg').open&&cur&&cur.n===a.n?' sel':''}" data-n="${esc(a.n)}"><span class="num"><span class="pre">${esc(a.n.slice(0,-3))}</span>${esc(a.n.slice(-3))}</span>
+    <span class="meta">${a.name&&a.name!=='-'?`<b>${esc(a.name)}</b>`:''}<span class="b">${esc(catName(a.c))}</span>${a.b?`<span class="b">${ageTxt(a.b)}</span>`:''}${a.c==='govs'?`<span class="b">${a.k===true?'bijis teļš':a.k===false?'nav bijis teļš':'teļš nezināms'}</span>`:''}${a.h&&HERDS.some(h=>h.id===a.h)?`<span class="b">${esc(HERDS.find(h=>h.id===a.h).name)}</span>`:''}${herdWarn(a).length?'<span class="b w">⚠ radniecība ar bulli</span>':''}${kc[a.n]?`<span class="b">teļi: ${kc[a.n]}</span>`:''}${a.mom?`<span class="b">māte ${esc(a.mom.slice(-3))}</span>`:''}${a.dad?`<span class="b">tēvs ${esc(parLabel(a.dad).split(' ')[0].slice(0,10))}</span>`:''}${needTag(a)?'<span class="b w">jauna krotālija</span>':''}</span>
+    <span class="kg">${lw?fmt(lw.kg)+' kg':''}</span></button>`}).join(''):
+    `<div class="empty">${A.length?'Nekas netika atrasts.':'Saraksts ir tukšs. Spied ⋮ un ielādē CSV failu vai pievieno lopu ar «+ Pievienot».'}</div>`;
+}
+
+const DESK=()=>matchMedia('(min-width:1000px)').matches;
+const docked=()=>$('#dlg').open&&$('#dlg').classList.contains('dock');
+function openDlg(){const d=$('#dlg');if(d.open)return;
+  if(DESK()){d.classList.add('dock');document.body.classList.add('pan');d.show()}else{d.classList.remove('dock');d.showModal()}}
+function open_(n){hist=[];cur=A.find(a=>a.n===n);if(!cur)return;detail();openDlg();$('#dlg').scrollTop=0;if(docked())render()}
+const nm=c=>c.name&&c.name!=='-'?esc(c.name):'';
+const parLabel=v=>{const m=A.find(x=>x.n===v);return m?m.n.slice(-3)+(m.name&&m.name!=='-'?' '+m.name:''):v};
+const parLabelH=v=>{const m=A.find(x=>x.n===v);return m?`<b>${esc(m.n.slice(-3))}</b> ${nm(m)}`:esc(v)};
+const sires=ex=>A.filter(x=>x.sire&&x!==ex).sort((p,q)=>p.n.slice(-3).localeCompare(q.n.slice(-3)));
+const sireOpts=def=>'<option value="">Nav norādīts</option>'+sires().map(x=>`<option value="${esc(x.n)}"${x.n===def?' selected':''}>${esc(parLabel(x.n))}</option>`).join('')+'<option value="__other">Cits (ievadīt)…</option>';
+const sireSel=a=>sires(a).length?`<select id="ps-dad" style="margin-top:6px"><option value="">Izvēlies no tēvu saraksta…</option>${sires(a).map(x=>`<option value="${esc(x.n)}">${esc(parLabel(x.n))}</option>`).join('')}</select>`:'';
+function lookup(d,pref){d=d.replace(/\D/g,'');if(!d)return{e:'empty'};
+  let L=A.filter(x=>x!==cur&&x.n.endsWith(d));
+  const ex=L.filter(x=>x.n.replace(/\D/g,'')===d);if(ex.length===1)return{r:ex[0]};
+  if(L.length>1&&pref){const P=L.filter(pref);if(P.length)L=P}
+  if(!L.length)return{e:'none',d};
+  if(L.length>1)return{e:'many',L};
+  return{r:L[0]}}
+function findA(d,pref){const o=lookup(d,pref);if(o.r)return o.r;
+  alert(o.e==='empty'?'Ieraksti numura beigu ciparus.':o.e==='many'?'Atrasti vairāki: '+o.L.map(x=>x.n.slice(-5)).join(', ')+'. Ieraksti vairāk ciparu.':'Lops ar numuru, kas beidzas uz '+o.d+', nav atrasts.');return null}
+function resolveP(raw,pref){raw=raw.trim();if(!raw)return'';
+  if(/^\d+$/.test(raw)){const o=lookup(raw,pref);if(o.r)return o.r.n;
+    if(o.e==='many'){alert('Atrasti vairāki: '+o.L.map(x=>x.n.slice(-5)).join(', ')+'. Ieraksti vairāk ciparu.');return null}
+    return confirm('Lopa ar šādiem cipariem sarakstā nav. Saglabāt «'+raw+'» kā tekstu?')?raw:null}
+  const U=raw.toUpperCase(),f=A.find(x=>x!==cur&&(x.n===U||(x.name||'').toUpperCase()===U));return f?f.n:U}
+function herdWarn(a){const h=HERDS.find(x=>x.id===a.h),w=[];
+  if(!h||!h.bull||a.n===h.bull||a.c==='bullis'||a.c==='bullen')return w;
+  const b=A.find(x=>x.n===h.bull),B='ganāmpulka bullis «'+parLabel(h.bull)+'» ';
+  if(a.dad===h.bull)w.push(B+'ir šī lopa tēvs.');
+  if(b&&b.mom&&b.mom===a.n)w.push(B+'ir šī lopa dēls.');
+  if(b&&b.mom&&b.mom===a.mom)w.push(B+'ir šī lopa brālis (kopīga māte).');
+  if(b&&b.dad&&b.dad===a.dad)w.push(B+'ir šī lopa brālis (kopīgs tēvs).');
+  return w}
+function inbred(a){const w=[];if(!a.mom||!a.dad)return w;
+  const m=A.find(x=>x.n===a.mom),d=A.find(x=>x.n===a.dad);
+  if(m&&m.dad&&m.dad===a.dad)w.push('tēvs ir arī mātes tēvs.');
+  if(d&&d.mom&&d.mom===a.mom)w.push('tēvs ir mātes dēls.');
+  if(m&&d&&m.mom&&m.mom===d.mom)w.push('vecākiem ir kopīga māte.');
+  if(m&&d&&m.dad&&m.dad===d.dad)w.push('vecākiem ir kopīgs tēvs.');
+  return w}
+function parRow(a,k,label){const v=a[k],m=v&&A.find(x=>x.n===v);
+  return `<div style="margin:8px 0"><b>${label}</b>${v?`<div class="kid">${m?`<button class="lk" data-go="${esc(m.n)}">${parLabelH(v)} <span class="kg">${esc(catName(m.c))}</span></button>`:`<span class="lk">${esc(v)}</span>`}<button class="d" data-px="${k}" aria-label="Noņemt">✕</button></div>`:' <span class="mu">nav norādīts</span>'}
+  ${v?'':`${k==='dad'?sireSel(a):''}<div class="bar" style="flex-wrap:nowrap"><input id="pq-${k}" placeholder="Pēdējie cipari, numurs vai vārds" aria-label="${label}"><button data-pa="${k}">Piesaistīt</button></div>`}</div>`}
+function kidRows(kids,k){return kids.map(c=>{const g=adg(c),lw=sw(c).slice(-1)[0];return `<div class="kid"><button class="lk" data-go="${esc(c.n)}"><b>${esc(c.n.slice(-3))}</b> ${nm(c)} <span class="kg">${esc(catName(c.c))}${c.b?' · '+ageTxt(c.b):''}${lw?' · '+fmt(lw.kg)+' kg':''}${g&&g.tot!==null?' · '+fmt(g.tot*1000)+' g/d':''}</span></button><button class="d" data-unl="${esc(c.n)}" data-uk="${k}" aria-label="Noņemt saiti">✕</button></div>`}).join('')||'<p class="mu">Nav piesaistītu.</p>'}
+function linkCard(a){
+  const W=inbred(a),HW=herdWarn(a);
+  let h=`<div class="card"><h3>Vecāki</h3>${W.length?`<p class="b w" style="display:block;border-radius:8px;padding:6px 10px">⚠ Tuvradniecība: ${W.join(' ')}</p>`:''}${HW.length?`<p class="b w" style="display:block;border-radius:8px;padding:6px 10px">⚠ Ganāmpulkā: ${HW.join(' ')}</p>`:''}${parRow(a,'mom','Māte')}${parRow(a,'dad','Tēvs')}</div>`;
+  if(a.c==='govs'){
+    const kids=A.filter(x=>x.mom===a.n);
+    h+=`<div class="card"><h3>Teļi (${kids.length})</h3>
+    <details class="nw"><summary>+ Jauns teļš</summary>
+    <p class="mu" style="margin-top:0">Numurs nav obligāts: ja krotālijas vēl nav, atstāj tukšu, un tiks piešķirts pagaidu numurs (T01…). Vēlāk to var nomainīt ar «Labot numuru». Var ierakstīt arī tikai pēdējos 3 ciparus.</p>
+    <div class="g2"><input id="nc-n" placeholder="Numurs (nav obligāts)" aria-label="Teļa numurs"><input id="nc-nm" placeholder="Vārds (nav obligāts)" aria-label="Teļa vārds"></div>
+    <div class="g2" style="margin-top:8px"><input type="date" id="nc-b" value="${today()}" aria-label="Dzimšanas datums"><select id="nc-c" aria-label="Kategorija">${catOpts()}</select></div>
+    <label style="display:block;margin-top:8px">Tēvs<select id="nc-d">${sireOpts((HERDS.find(x=>x.id===a.h)||{}).bull)}</select></label>
+    <input id="nc-do" style="display:none;margin-top:8px" placeholder="Tēvs: cipari, numurs vai vārds" aria-label="Cits tēvs">
+    <div class="bar"><button class="p" id="nc-add">Pievienot teļu</button></div></details>
+    ${kidRows(kids,'mom')}
+    <b style="font-size:.9rem;display:block;margin-top:12px">Piesaistīt esošu lopu</b>
+    <div class="bar" style="flex-wrap:nowrap"><input id="lc-q" inputmode="numeric" placeholder="Teļa pēdējie cipari"><button id="lc-add">Piesaistīt</button></div></div>`}
+  else if(a.c==='bullis'){
+    const kids=A.filter(x=>x.dad===a.n);
+    h+=`<div class="card"><h3>Pēcnācēji (${kids.length})</h3>${kidRows(kids,'dad')}
+    <b style="font-size:.9rem;display:block;margin-top:12px">Piesaistīt esošu lopu</b>
+    <div class="bar" style="flex-wrap:nowrap"><input id="lb-q" inputmode="numeric" placeholder="Lopa pēdējie cipari"><button id="lb-add">Piesaistīt</button></div></div>`}
+  return h}
+function detail(){
+  const a=cur,g=adg(a),w=sw(a);
+  $('#det').innerHTML=`
+  <div class="top"><span>${hist.length?'<button id="bk">← Atpakaļ</button>':''}</span><button id="x" aria-label="Aizvērt">✕</button></div>
+  <h2><span class="pre" style="display:inline;font-size:1rem">${esc(a.n.slice(0,-3))}</span>${esc(a.n.slice(-3))}</h2>
+  <div style="color:var(--mu)">${[a.name&&a.name!=='-'?esc(a.name):'',a.b?'dz. '+a.b.split('-').reverse().join('.')+' ('+ageTxt(a.b)+')':''].filter(Boolean).join(' · ')} <button id="rn" style="padding:2px 8px;font-size:.8rem;margin-left:6px">Labot numuru</button> <button id="eb" style="padding:2px 8px;font-size:.8rem">Labot vecumu</button></div>
+  ${editB===a.n?`<div class="g2" style="margin-top:8px"><input type="date" id="bd" value="${esc(a.b||'')}" aria-label="Dzimšanas datums"><span class="bar" style="margin:0"><button class="p" id="bs">Saglabāt</button><button id="bc">Atcelt</button></span></div>`:''}
+  <div class="fl"><div class="g2">
+    <label>Kategorija<select id="fc">${catOpts()}</select></label>
+    ${a.c==='govs'?`<label>Vai bijis teļš?<select id="fk"><option value="">Nezināms</option><option value="y">Jā, ir bijis</option><option value="n">Nav bijis</option></select></label>`:'<span></span>'}
+  </div>
+  ${HERDS.length?`<label>Ganāmpulks<select id="fh2"><option value="">Bez ganāmpulka</option>${HERDS.map(h=>`<option value="${esc(h.id)}">${esc(h.name)}</option>`).join('')}</select></label>`:''}
+  <label>Vārds<input id="fn" value="${esc(a.name&&a.name!=='-'?a.name:'')}" placeholder="Vārds (nav obligāts)"></label>
+  ${a.c==='bullis'||a.c==='bullen'?`<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fs" style="width:auto" ${a.sire?'checked':''}> Ir tēvs (parādās izvēlnē, reģistrējot teļu)</label>`:''}
+  </div>
+  ${linkCard(a)}
+  <div class="card"><h3>Svars</h3>
+    <div class="g2"><input type="date" id="wd" value="${today()}" aria-label="Datums"><input type="number" id="wk" inputmode="decimal" step="0.1" min="0" placeholder="kg" aria-label="Svars kg"></div>
+    <input id="wc" style="margin-top:8px" placeholder="Komentārs (nav obligāts)" aria-label="Komentārs"><div class="bar"><button class="p" id="wadd">Saglabāt svaru</button></div>
+    ${g?`<p style="margin:12px 0 0">Pieaugums dienā${g.tot!==null?` (kopš ${esc(w[0].d)}, ${g.dt} d.)`:''}</p>
+      <div class="big">${g.tot!==null?fmt(g.tot*1000)+' g/dienā':'—'}</div>
+      <div style="color:var(--mu);font-size:.9rem">${g.last!==null?`Pēdējā periodā (${g.dl} d.): ${fmt(g.last*1000)} g/dienā · `:''}kopā ${g.diff>0?'+':''}${fmt(g.diff)} kg</div>`:
+      `<p style="color:var(--mu);margin:10px 0 0;font-size:.9rem">Lai redzētu pieaugumu, vajag vismaz divus svēršanas datumus.</p>`}
+    ${w.length?`<table style="margin-top:10px"><tr><th>Datums</th><th>kg</th><th>Komentārs</th><th></th></tr>${[...w].reverse().map(x=>`<tr><td>${esc(x.d)}</td><td>${fmt(x.kg)}</td><td>${esc(x.c||'')}</td><td><button class="d" data-wd="${esc(x.d)}|${x.kg}" aria-label="Dzēst">✕</button></td></tr>`).join('')}</table>`:''}
+  </div>
+  <div class="card"><h3>Piezīmes</h3>
+    <textarea id="nt" rows="4" placeholder="Piem. vajag jaunu krotāliju">${esc(a.note||'')}</textarea>
+    <div id="tg" style="margin-top:6px">${needTag(a)?'<span class="b w">Atzīmēts: jauna krotālija</span>':''}</div>
+    <div style="color:var(--mu);font-size:.8rem;margin-top:6px">Ja piezīmēs ir vārdi «jauna» un «krotālija», lops parādās filtrā «Jauna krotālija».</div>
+  </div>
+  <div class="bar" style="justify-content:space-between"><button class="d" id="del">Dzēst lopu</button><button class="p" id="cl">Gatavs</button></div>`;
+  $('#fc').value=a.c;if($('#fh2'))$('#fh2').value=HERDS.some(h=>h.id===a.h)?a.h:'';if($('#nc-c'))$('#nc-c').value=CATS.some(c=>c.id==='tele')?'tele':'cits';
+  if($('#fk'))$('#fk').value=a.k===true?'y':a.k===false?'n':'';
+}
+
+$('#det').addEventListener('change',e=>{
+  if(e.target.id==='fc'){cur.c=e.target.value;cur.m=1;if(cur.c!=='govs')cur.k=null;save();detail()}
+  if(e.target.id==='fh2'){cur.h=e.target.value||undefined;save();detail()}
+  if(e.target.id==='fs'){cur.sire=e.target.checked;save()}
+  if(e.target.id==='ps-dad'&&e.target.value){cur.dad=e.target.value;save();detail()}
+  if(e.target.id==='nc-d')$('#nc-do').style.display=e.target.value==='__other'?'':'none';
+  if(e.target.id==='fk'){cur.k=e.target.value==='y'?true:e.target.value==='n'?false:null;save()}
+});
+$('#det').addEventListener('input',e=>{
+  if(e.target.id==='fn'){cur.name=e.target.value.trim();cur.nm=1;save()}
+  if(e.target.id==='nt'){cur.note=e.target.value;save();$('#tg').innerHTML=needTag(cur)?'<span class="b w">Atzīmēts: jauna krotālija</span>':''}
+});
+$('#det').addEventListener('click',e=>{
+  const t=e.target.closest('button')||e.target;
+  if(t.dataset.go){hist.push(cur.n);cur=A.find(a=>a.n===t.dataset.go);detail();$('#dlg').scrollTop=0;if(docked())render()}
+  if(t.id==='bk'){cur=A.find(a=>a.n===hist.pop())||cur;detail();$('#dlg').scrollTop=0;if(docked())render()}
+  if(t.id==='lc-add'){const c=findA($('#lc-q').value,x=>x.c!=='govs');if(c){
+    if(c.mom&&c.mom!==cur.n&&!confirm('Šim lopam jau ir norādīta māte '+c.mom.slice(-3)+'. Mainīt?'))return;
+    c.mom=cur.n;cur.k=true;save();detail()}}
+  if(t.id==='nc-add'){const pre=cur.n.slice(0,-3);let n=$('#nc-n').value.replace(/\s+/g,'').toUpperCase();
+    if(!n){const T=i=>pre+'T'+String(i).padStart(2,'0');let i=1;while(A.some(a=>a.n===T(i)))i++;n=T(i)}
+    else if(/^\d{1,3}$/.test(n))n=pre+n.padStart(3,'0');
+    if(A.some(a=>a.n===n)){alert('Lops ar numuru '+n+' jau ir sarakstā. Izmanto «Piesaistīt esošu lopu».');return}
+    let dad=$('#nc-d').value;if(dad==='__other'){dad=resolveP($('#nc-do').value,x=>x.sire||x.c==='bullis');if(dad===null)return}
+    const nmv=$('#nc-nm').value.trim(),cv=$('#nc-c').value;
+    A.push({n,c:cv,m:cv!=='cits'?1:undefined,name:nmv||undefined,nm:nmv?1:undefined,k:null,w:[],note:'',b:$('#nc-b').value,mom:cur.n,dad:dad||'',h:cur.h});cur.k=true;save();detail()}
+  if(t.id==='x')$('#dlg').close();
+  if(t.id==='rn'){const n=(prompt('Jaunais numurs:',cur.n)||'').replace(/\s+/g,'').toUpperCase();
+    if(!n||n===cur.n)return;if(A.some(a=>a.n===n)){alert('Šāds numurs jau ir.');return}
+    const o=cur.n;A.forEach(a=>{if(a.mom===o)a.mom=n;if(a.dad===o)a.dad=n});hist=hist.map(h=>h===o?n:h);cur.n=n;save();detail()}
+  if(t.dataset.unl&&confirm('Noņemt saiti ar teļu '+t.dataset.unl.slice(-3)+'?')){const c=A.find(a=>a.n===t.dataset.unl);if(c){c[t.dataset.uk||'mom']='';save();detail()}}
+  if(t.dataset.pa){const k=t.dataset.pa,v=resolveP($('#pq-'+k).value,x=>k==='mom'?x.c==='govs':x.c==='bullis');
+    if(!v)return;cur[k]=v;if(k==='mom'){const m=A.find(x=>x.n===v);if(m&&m.c==='govs')m.k=true}save();detail()}
+  if(t.dataset.px&&confirm('Noņemt šo vecāku?')){cur[t.dataset.px]='';save();detail()}
+  if(t.id==='lb-add'){const c=findA($('#lb-q').value,x=>x.c!=='bullis');if(c){
+    if(c.dad&&c.dad!==cur.n&&!confirm('Šim lopam jau ir norādīts tēvs '+parLabel(c.dad)+'. Mainīt?'))return;
+    c.dad=cur.n;save();detail()}}
+  if(t.id==='eb'){if(!confirm('Vai tiešām mainām dzimšanas datumu?'))return;editB=cur.n;detail()}
+  if(t.id==='bc'){editB='';detail()}
+  if(t.id==='bs'){const v=$('#bd').value;if(v)cur.b=v;else delete cur.b;cur.bm=1;
+    if(!cur.m&&cur.s){const c=autoCat(cur.s,cur.b,cur.u);if(c&&CATS.some(x=>x.id===c))cur.c=c}
+    editB='';save();detail()}
+  if(t.id==='wadd'){const kg=parseFloat($('#wk').value.replace(',','.')),d=$('#wd').value;
+    if(!d||!(kg>0)){alert('Ieraksti datumu un svaru.');return}
+    cur.w=(cur.w||[]).filter(x=>x.d!==d);cur.w.push({d,kg,c:$('#wc').value.trim(),t:Date.now()});save();detail()}
+  if(t.dataset.wd){const[d,k]=t.dataset.wd.split('|');cur.w=cur.w.filter(x=>!(x.d===d&&String(x.kg)===k));save();detail()}
+  if(t.id==='del'&&confirm('Dzēst lopu '+cur.n+'?')){A=A.filter(a=>a!==cur);save();$('#dlg').close()}
+  if(t.id==='cl')$('#dlg').close();
+});
+$('#dlg').addEventListener('close',()=>{hist=[];document.body.classList.remove('pan');render();if(TAB==='weigh')renderW()});
+$('#list').addEventListener('click',e=>{const r=e.target.closest('.row');if(r)open_(r.dataset.n)});
+$('#chips').addEventListener('click',e=>{const c=e.target.closest('.chip');if(c){F=c.dataset.f;render()}});
+$('#q').addEventListener('input',render);
+$('#fdad').addEventListener('change',e=>{FD=e.target.value;render()});
+$('#gd').addEventListener('change',e=>{GD=e.target.checked;render()});
+$('#add').onclick=()=>{$('#an').value='';$('#aname').value='';$('#ab').value='';$('#ac').innerHTML=catOpts();$('#ac').value='cits';$('#adlg').showModal()};
+$('#acancel').onclick=$('#ax').onclick=()=>$('#adlg').close();
+$('#asave').onclick=()=>{const n=$('#an').value.replace(/\s+/g,'').toUpperCase();if(!n){alert('Ieraksti numuru.');return}
+  $('#adlg').close();
+  if(A.some(a=>a.n===n)){alert('Šāds numurs jau ir sarakstā.');open_(n);return}
+  const nmv=$('#aname').value.trim(),cv=$('#ac').value;
+  A.push({n,c:cv,m:cv!=='cits'?1:undefined,name:nmv||undefined,nm:nmv?1:undefined,b:$('#ab').value||undefined,k:null,w:[],note:''});save();render();open_(n)};
+$('#menu').onclick=()=>{lastBk();loadGIS().catch(()=>{});renderCats();renderHerds();$('#mdlg').showModal()};
+$('#mclose').onclick=$('#mx').onclick=()=>$('#mdlg').close();
+
+// Svēršanas lapa
+function renderW(){
+  if(!SD)SD=today();
+  if(!$('#sd').value)$('#sd').value=SD;
+  const q=$('#sq').value.replace(/\D/g,'');
+  const L=q?A.filter(a=>a.n.endsWith(q)):[];
+  if(L.length===1)SEL=L[0];else if(SEL&&!L.includes(SEL))SEL=null;
+  $('#sres').innerHTML=(!SEL&&L.length>1)?L.slice(0,8).map(a=>`<button class="row" data-sp="${esc(a.n)}"><span class="num"><span class="pre">${esc(a.n.slice(0,-3))}</span>${esc(a.n.slice(-3))}</span><span class="meta">${nm(a)?`<b>${nm(a)}</b>`:''}<span class="b">${esc(catName(a.c))}</span></span></button>`).join('')+(L.length>8?`<div class="mu">Rāda 8 no ${L.length}. Ieraksti vairāk ciparu.</div>`:''):(q&&!L.length?'<div class="mu">Nekas netika atrasts.</div>':'');
+  let h='';
+  if(SEL){const a=SEL,w=sw(a),lw=w[w.length-1],g=adg(a);
+    h=`<div class="card" style="margin:8px 0;background:var(--ac2)"><span class="num"><span class="pre" style="display:inline">${esc(a.n.slice(0,-3))}</span>${esc(a.n.slice(-3))}</span> ${nm(a)} <span class="b">${esc(catName(a.c))}</span>${a.b?` <span class="b">${ageTxt(a.b)}</span>`:''}
+    <div class="mu">${lw?`Pēdējais svars: ${fmt(lw.kg)} kg (${esc(lw.d)})${g&&g.tot!==null?`, vidēji ${fmt(g.tot*1000)} g/dienā`:''}`:'Svars vēl nav ievadīts.'}</div></div>`}
+  $('#ssel').innerHTML=h;
+  const items=[];A.forEach(a=>sw(a).forEach((x,i,arr)=>{if(x.d===SD)items.push({a,x,p:arr[i-1]})}));
+  items.sort((u,v)=>(v.x.t||0)-(u.x.t||0));
+  $('#sh').textContent=(SD===today()?'Šodien nosvērti':'Nosvērti '+SD)+' ('+items.length+')';
+  $('#slist').innerHTML=items.length?items.map(({a,x,p})=>{const dd=p?days(p.d,x.d):0;
+    const ch=p?` · ${x.kg-p.kg>0?'+':''}${fmt(x.kg-p.kg)} kg${dd>0?' · '+fmt((x.kg-p.kg)/dd*1000)+' g/d':''}`:'';
+    return `<div class="kid"><button class="lk" data-op="${esc(a.n)}"><b>${esc(a.n.slice(-3))}</b> ${nm(a)} <span class="kg">${fmt(x.kg)} kg${ch}${x.c?' · '+esc(x.c):''}</span></button><button class="d" data-sx="${esc(a.n)}|${esc(x.d)}" aria-label="Dzēst">✕</button></div>`}).join(''):'<p class="mu">Šajā datumā vēl nav svēršanu.</p>';
+}
+function saveW(){const kg=parseFloat($('#sk').value.replace(',','.'));
+  if(!SEL){$('#smsg').textContent='Izvēlies lopu.';return}
+  if(!(kg>0)){$('#smsg').textContent='Ieraksti svaru.';return}
+  const a=SEL,d=SD,had=(a.w||[]).some(x=>x.d===d);
+  a.w=(a.w||[]).filter(x=>x.d!==d);a.w.push({d,kg,c:$('#sc').value.trim(),t:Date.now()});save();
+  const g=adg(a);
+  $('#smsg').textContent=`Saglabāts: ${a.n.slice(-3)} – ${fmt(kg)} kg${had?' (aizstāts šī datuma svars)':''}${g&&g.last!==null?`; pieaugums ${fmt(g.last*1000)} g/dienā`:''}`;
+  SEL=null;$('#sq').value='';$('#sk').value='';$('#sc').value='';renderW();$('#sq').focus()}
+function setTab(t){TAB=t;$('#flt').hidden=t!=='list';$('#lmain').hidden=t!=='list';$('#wmain').hidden=t!=='weigh';
+  $('#tl').classList.toggle('on',t==='list');$('#tw').classList.toggle('on',t==='weigh');
+  if(t==='weigh')renderW();else render();window.scrollTo(0,0)}
+$('#tl').onclick=()=>setTab('list');$('#tw').onclick=()=>setTab('weigh');
+$('#sq').addEventListener('input',renderW);
+$('#sd').addEventListener('change',e=>{SD=e.target.value||today();renderW()});
+['#sk','#sc'].forEach(i=>$(i).addEventListener('keydown',e=>{if(e.key==='Enter')saveW()}));
+$('#wmain').addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.sp){SEL=A.find(a=>a.n===t.dataset.sp);renderW();$('#sk').focus()}
+  if(t.dataset.op)open_(t.dataset.op);
+  if(t.dataset.sx){const[n,d]=t.dataset.sx.split('|'),a=A.find(x=>x.n===n);if(a&&confirm('Dzēst šo svēršanu?')){a.w=a.w.filter(x=>x.d!==d);save();renderW()}}
+  if(t.id==='ssave')saveW()});
+// Google Drive
+const CID='662837588853-4ldt8q3ef51qcul0tnfg86rrapc9264p.apps.googleusercontent.com',DRV='https://www.googleapis.com/drive/v3/files',UPL='https://www.googleapis.com/upload/drive/v3/files';
+let gTok=null,gExp=0;
+function loadGIS(){return new Promise((res,rej)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return res();
+  const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.onload=()=>res();
+  sc.onerror=()=>rej(new Error('Neizdevās ielādēt Google pieslēgšanos (vai ir internets?).'));document.head.appendChild(sc)})}
+function gToken(){const cid=CID;
+  if(gTok&&Date.now()<gExp)return Promise.resolve(gTok);
+  return loadGIS().then(()=>new Promise((res,rej)=>{
+    const c=google.accounts.oauth2.initTokenClient({client_id:cid,scope:'https://www.googleapis.com/auth/drive.file',
+      callback:r=>{if(r.error)return rej(new Error(r.error_description||r.error));gTok=r.access_token;gExp=Date.now()+(r.expires_in-60)*1000;res(gTok)},
+      error_callback:e=>rej(new Error(e.type==='popup_closed'?'Google logs tika aizvērts.':e.type==='popup_failed_to_open'?'Pārlūks bloķēja Google logu. Atļauj uznirstošos logus un mēģini vēlreiz.':(e.type||'Pieslēgšanās neizdevās.')))});
+    c.requestAccessToken()}))}
+async function dFetch(url,opt={}){const t=await gToken();
+  const r=await fetch(url,{...opt,headers:{Authorization:'Bearer '+t,...(opt.headers||{})}});
+  if(!r.ok){if(r.status===401)gTok=null;throw new Error('Drive kļūda '+r.status+' '+(await r.text()).slice(0,160))}return r}
+async function findFile(){const r=await dFetch(DRV+'?q='+encodeURIComponent("name='lopu-kopija.json' and trashed=false")+'&fields='+encodeURIComponent('files(id,modifiedTime)')+'&orderBy='+encodeURIComponent('modifiedTime desc'));
+  const j=await r.json();return j.files&&j.files[0]||null}
+async function driveSave(){const body=JSON.stringify({v:2,cats:CATS,herds:HERDS,animals:A}),f=await findFile(),bd='lopi'+Date.now();
+  const mp=`--${bd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:'lopu-kopija.json',mimeType:'application/json'})}\r\n--${bd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bd}--`;
+  await dFetch((f?UPL+'/'+f.id:UPL)+'?uploadType=multipart',{method:f?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body:mp})}
+async function driveLoad(){const f=await findFile();if(!f)throw new Error('Google Drive nav atrasta kopija «lopu-kopija.json».');
+  const r=await dFetch(DRV+'/'+f.id+'?alt=media');return{data:await r.json(),t:f.modifiedTime}}
+function applyBackup(d){let cc=null,hh=null;if(!Array.isArray(d)){cc=d.cats;hh=d.herds;d=d.animals}
+  if(!Array.isArray(d))throw new Error('Kopijas formāts nav derīgs.');
+  A=d;if(Array.isArray(cc)&&cc.length){CATS=cc;saveC()}if(Array.isArray(hh)){HERDS=hh;saveH()}save();render();renderCats();renderHerds()}
+const gset=t=>{$('#gst').textContent=t};
+function lastBk(){let t='';try{t=localStorage.getItem('lopi_lastbk')}catch(e){}$('#glast').textContent=t?'Pēdējā kopija: '+new Date(+t).toLocaleString('lv-LV'):'Kopija vēl nav veidota.'}
+function markBk(){try{localStorage.setItem('lopi_lastbk',String(Date.now()))}catch(e){}lastBk()}
+$('#gsave').onclick=async e=>{const b=e.currentTarget;b.disabled=true;gset('Saglabāju Google Drive…');
+  try{await driveSave();markBk();gset('Saglabāts Google Drive ('+A.length+' lopi).')}catch(x){gset('Kļūda: '+x.message)}b.disabled=false};
+$('#gload').onclick=async e=>{const b=e.currentTarget;b.disabled=true;gset('Meklēju kopiju Google Drive…');
+  try{const{data,t}=await driveLoad(),n=(Array.isArray(data)?data:data.animals||[]).length;
+    if(confirm('Aizvietot visus pašreizējos datus ar Drive kopiju ('+n+' lopi, saglabāta '+new Date(t).toLocaleString('lv-LV')+')?')){applyBackup(data);gset('Atjaunots no Google Drive ('+n+' lopi).')}else gset('Atcelts.')}
+  catch(x){gset('Kļūda: '+x.message)}b.disabled=false};
+// Ganāmpulki
+function renderHerds(){$('#herds').innerHTML=HERDS.length?HERDS.map(h=>{const so=sires().concat(A.filter(x=>x.n===h.bull&&!x.sire));
+  return `<div class="card" style="margin:6px 0;padding:8px"><div class="bar" style="margin:0 0 6px;flex-wrap:nowrap"><input data-hn="${esc(h.id)}" value="${esc(h.name)}" aria-label="Nosaukums"><span class="kg">${A.filter(a=>a.h===h.id).length}</span><button class="d" data-hx="${esc(h.id)}" aria-label="Dzēst">✕</button></div><select data-hb="${esc(h.id)}" aria-label="Bullis"><option value="">Bullis: nav norādīts</option>${so.map(x=>`<option value="${esc(x.n)}"${x.n===h.bull?' selected':''}>Bullis: ${esc(parLabel(x.n))}</option>`).join('')}</select></div>`}).join(''):'<p class="mu">Vēl nav izveidots neviens ganāmpulks.</p>'}
+$('#herds').addEventListener('change',e=>{const t=e.target;
+  if(t.dataset.hn){const h=HERDS.find(x=>x.id===t.dataset.hn),v=t.value.trim();if(h&&v){h.name=v;saveH();render()}else renderHerds()}
+  if(t.dataset.hb){const h=HERDS.find(x=>x.id===t.dataset.hb);if(h){h.bull=t.value||'';saveH();render()}}});
+$('#herds').addEventListener('click',e=>{const t=e.target.closest('button');if(!t||!t.dataset.hx)return;const h=HERDS.find(x=>x.id===t.dataset.hx);
+  if(h&&confirm('Dzēst ganāmpulku «'+h.name+'»? Lopi paliks bez ganāmpulka.')){A.forEach(a=>{if(a.h===h.id)delete a.h});HERDS=HERDS.filter(x=>x!==h);if(FH===h.id)FH='';save();saveH();renderHerds();render()}});
+$('#addherd').onclick=()=>{const v=$('#newherd').value.trim();if(!v)return;HERDS.push({id:'h'+Date.now(),name:v,bull:''});$('#newherd').value='';saveH();renderHerds();render()};
+$('#fh').addEventListener('change',e=>{FH=e.target.value;render()});
+$('#bulk').addEventListener('change',e=>{const v=e.target.value;if(!v)return;
+  const nmH=v==='__none'?'Bez ganāmpulka':(HERDS.find(h=>h.id===v)||{}).name;
+  if(confirm('Pārvietot '+VIS.length+' lopus uz «'+nmH+'»?')){VIS.forEach(a=>{if(v==='__none')delete a.h;else a.h=v});save()}
+  render()});
+// Kategorijas
+function renderCats(){$('#cats').innerHTML=CATS.map((c,i)=>`<div class="bar" style="margin:4px 0;flex-wrap:nowrap"><input data-r="${esc(c.id)}" value="${esc(c.name)}" aria-label="Nosaukums"><span class="kg">${A.filter(a=>a.c===c.id).length}</span><button data-u="${i}" aria-label="Uz augšu">↑</button><button data-dn="${i}" aria-label="Uz leju">↓</button><button class="d" data-x="${esc(c.id)}" aria-label="Dzēst">✕</button></div>`).join('')}
+const swp=(i,j)=>{if(j<0||j>=CATS.length)return;[CATS[i],CATS[j]]=[CATS[j],CATS[i]];saveC();renderCats();render()};
+$('#cats').addEventListener('change',e=>{const id=e.target.dataset.r;if(!id)return;const c=CATS.find(x=>x.id===id),v=e.target.value.trim();if(c&&v){c.name=v;saveC();render()}else renderCats()});
+$('#cats').addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.u!==undefined)swp(+t.dataset.u,+t.dataset.u-1);
+  if(t.dataset.dn!==undefined)swp(+t.dataset.dn,+t.dataset.dn+1);
+  if(t.dataset.x){const c=CATS.find(x=>x.id===t.dataset.x);if(c&&confirm('Dzēst kategoriju «'+c.name+'»? Tās lopi kļūs «Nenoteikti».')){A.forEach(a=>{if(a.c===c.id)a.c='cits'});CATS=CATS.filter(x=>x!==c);if(F===c.id)F='all';save();saveC();renderCats();render()}}});
+$('#addcat').onclick=()=>{const v=$('#newcat').value.trim();if(!v)return;CATS.push({id:'c'+Date.now(),name:v});$('#newcat').value='';saveC();renderCats();render()};
+// CSV
+const decode=buf=>{try{return new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(e){return new TextDecoder('windows-1257').decode(buf)}};
+function parseCSV(t){
+  const lines=t.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];
+  const f=lines[0],del=[';','\t',','].map(d=>[d,f.split(d).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const rows=lines.map(l=>l.split(del).map(c=>c.trim().replace(/^"|"$/g,'').trim()));
+  const ix={n:0,s:-1,b:-1,name:-1,u:-1,ex:-1,c:-1,k:-1};
+  if(!/\d/.test(rows[0][0])||rows[0].some(x=>/\bid\b/i.test(x))){
+    const h=rows.shift().map(x=>x.toLowerCase()),fi=re=>h.findIndex(x=>re.test(x));
+    const i=fi(/\bid\b|numur|krot/);if(i>=0)ix.n=i;
+    ix.s=fi(/^dz\.?$|dzimum/);ix.b=fi(/dzimšanas datums|dzimsanas/);ix.name=fi(/vārds|vards/);
+    ix.u=fi(/^izm\.?$/);ix.ex=fi(/izslēgšanas datums/);ix.c=fi(/^(veids|kategor|tips)/);ix.k=fi(/teļoj|telj/);
+  }
+  const g=(r,k)=>ix[k]>=0?(r[ix[k]]||''):'';
+  return rows.map(r=>({n:(r[ix.n]||'').replace(/\s+/g,''),s:g(r,'s').toUpperCase(),b:isoD(g(r,'b')),name:g(r,'name'),u:g(r,'u'),ex:g(r,'ex'),c:g(r,'c'),k:g(r,'k')})).filter(r=>r.n);
+}
+$('#csv').addEventListener('change',async e=>{
+  const file=e.target.files[0];if(!file)return;
+  const rows=parseCSV(decode(await file.arrayBuffer()));let add=0,upd=0,skip=0;
+  const dc=$('#defc').value;
+  rows.forEach(r=>{
+    if(r.ex){skip++;return}
+    let c=/govs|govi|cow/i.test(r.c)?'govs':/teļ|tel|calf/i.test(r.c)?'tele':'';
+    if(!c)c=autoCat(r.s,r.b,r.u);if(c&&!CATS.some(x=>x.id===c))c='cits';
+    const k=r.k===''?undefined:/^(jā|ja|yes|y|1|true|x|\+)/i.test(r.k)?true:false;
+    let a=A.find(x=>x.n===r.n);
+    if(a){if(c&&!a.m)a.c=c;upd++}
+    else{a={n:r.n,c:c||dc,k:null,w:[],note:''};A.push(a);add++}
+    if(r.name&&!a.nm)a.name=r.name;if(r.b&&!a.bm)a.b=r.b;if(r.s)a.s=r.s;
+    if(k!==undefined&&a.c==='govs')a.k=k;
+  });
+  save();render();e.target.value='';alert(`Pievienoti: ${add}, atjaunināti: ${upd}`+(skip?`, izlaisti izslēgtie: ${skip}`:''));$('#mdlg').close();
+});
+// JSON backup
+$('#exp').onclick=()=>{const b=new Blob([JSON.stringify({v:2,cats:CATS,herds:HERDS,animals:A},null,1)],{type:'application/json'});
+  const u=URL.createObjectURL(b),l=document.createElement('a');l.href=u;l.download='lopi-'+today()+'.json';l.click();URL.revokeObjectURL(u);markBk()};
+$('#impb').onclick=()=>$('#imp').click();
+$('#imp').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{let d=JSON.parse(await f.text()),cc=null,hh=null;if(!Array.isArray(d)){cc=d.cats;hh=d.herds;d=d.animals}if(!Array.isArray(d))throw 0;
+    if(confirm('Aizvietot visus pašreizējos datus ar kopiju ('+d.length+' lopi)?')){A=d;if(Array.isArray(cc)&&cc.length){CATS=cc;saveC()}if(Array.isArray(hh)){HERDS=hh;saveH()}save();render();renderCats();$('#mdlg').close()}}
+  catch(x){alert('Fails nav derīga kopija.')}
+  e.target.value='';
+});
+render();
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&docked())$('#dlg').close()});
+</script>
+</body>
+</html>
