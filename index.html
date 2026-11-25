@@ -61,7 +61,7 @@ nav span{font-size:11px}
 <body>
 <main id="app"></main>
 <div id="mapwrap" class="hide"><div id="mt"><div class="row" id="mr">
-<button class="p" onclick="me()">Mana vieta</button><button onclick="startDraw()">Zīmēt lauku</button><button onclick="document.getElementById('shpf').click()">Ielādēt kontūras</button><button class="d" onclick="clearImp()">Notīrīt</button></div>
+<button class="p" onclick="me()">Mana vieta</button><button onclick="startDraw()">Zīmēt lauku</button><button onclick="document.getElementById('shpf').click()">Ielādēt kontūras</button><button class="d" onclick="clearImp()">Notīrīt</button><button class="p hide" id="addall" onclick="addAllImp()">Pievienot visus</button></div>
 <div class="mut" id="ms" style="margin-top:4px"></div><input type="file" id="shpf" multiple class="hide" onchange="onShp(this.files)"></div>
 <div id="map"></div>
 <div class="row hide" id="dt"><button onclick="undoPt()">↶ Atsaukt</button><button onclick="gpsPt()">◎ GPS punkts</button><button class="p" onclick="finishDraw()">✓ Gatavs</button><button class="d" onclick="cancelDraw()">✕</button></div></div>
@@ -116,7 +116,7 @@ function locate(cb){
 
 function sortedFields(){
  return db.fields.map(f=>({...f,d:(pos&&(f.geom||f.lat!=null))?fdist(pos,f):null}))
-  .sort((a,b)=>a.d==null?(b.d==null?a.name.localeCompare(b.name):1):b.d==null?-1:a.d-b.d);
+  .sort((a,b)=>a.d==null?(b.d==null?a.name.localeCompare(b.name,'lv',{numeric:true}):1):b.d==null?-1:a.d-b.d);
 }
 function jobCard(j){
  const c=TC[j.type]||'#7a7f87';
@@ -152,7 +152,7 @@ function openField(id){
  const f=db.fields.find(x=>x.id===id);if(!f)return;
  view=()=>{const J=db.jobs.filter(j=>j.field===id&&inSeason(j)).sort((a,b)=>b.date.localeCompare(a.date));
  return `<div class="row sp"><button onclick="back()">← Atpakaļ</button><button onclick="editField('${id}')">Labot lauku</button></div>
- <h1>${esc(f.name)}</h1><div class="mut">${f.area?esc(f.area)+' ha · ':''}${esc(cropOf(f))}${f.lat!=null?' · '+f.lat.toFixed(5)+', '+f.lon.toFixed(5):''}</div>${hist(f)}
+ <h1>${esc(f.name)}</h1><div class="mut">${f.area?esc(f.area)+' ha · ':''}${esc(cropOf(f))}${f.src&&f.src.BLOCK_NUMB?' · LAD bloks '+esc(f.src.BLOCK_NUMB):''}${f.lat!=null?' · '+f.lat.toFixed(5)+', '+f.lon.toFixed(5):''}</div>${hist(f)}
  <div class="row" style="margin:10px 0"><button class="p" onclick="editJob(null,'${id}')">+ Jauns darbs</button><button onclick="startDraw('${id}')">${f.geom?'Labot kontūru':'Zīmēt kontūru'}</button></div>
  <div class="row sp" style="margin-bottom:8px"><button class="p" onclick="exportXlsx('${id}',false)">⬇ Excel atskaite</button>${seasonSel()}</div>${J.length?J.map(jobCard).join(''):`<div class="card mut">Šim laukam ${season}. sezonā nav darbu.</div>`}`};
  render();window.scrollTo(0,0);
@@ -458,7 +458,7 @@ async function onShp(files){
  if(!files.length)return;
  mmsg='Ielasa…';render();
  try{await loadShape([...files]);mapFit=true;
-  mmsg='Ielādētas '+imp.length+' kontūras. Pieskarieties kontūrai, lai pievienotu to kā lauku.'+(imp.length>3000?' Kontūru ir ļoti daudz, karte var darboties lēni.':'')}
+  mmsg='Ielādētas '+imp.length+' kontūras. Pieskarieties kontūrai vai nospiediet „Pievienot visus”.'+(imp.length>3000?' Kontūru ir ļoti daudz, karte var darboties lēni.':'')}
  catch(e){mmsg='Kļūda: '+(e.message||e)}
  document.getElementById('shpf').value='';render();
 }
@@ -467,7 +467,9 @@ async function clearImp(){
  imp=[];try{await idbSet('imp',[])}catch(e){}mmsg='';render();
 }
 function areaHa(g){
- const la0=g[0][0][0],lo0=g[0][0][1],kx=111320*Math.cos(la0*Math.PI/180),ky=110574;let s=0;
+ const r0=g[0],la0=r0.reduce((t,q)=>t+q[0],0)/r0.length,lo0=r0[0][1],p=la0*Math.PI/180,
+ ky=111132.92-559.82*Math.cos(2*p)+1.175*Math.cos(4*p),
+ kx=111412.84*Math.cos(p)-93.5*Math.cos(3*p)+0.118*Math.cos(5*p);let s=0;
  g.forEach(r=>{for(let i=0;i<r.length;i++){const a=r[i],b=r[(i+1)%r.length];
   s+=((a[1]-lo0)*kx)*((b[0]-la0)*ky)-((b[1]-lo0)*kx)*((a[0]-la0)*ky)}});
  return Math.abs(s)/2/10000;
@@ -479,14 +481,39 @@ function fdist(p,f){
  if(f.geom){if(pip(p,f.geom))return 0;let m=1e12;f.geom.forEach(r=>r.forEach(q=>{const d=dist(p,{lat:q[0],lon:q[1]});if(d<m)m=d}));return m}
  return f.lat!=null?dist(p,f):null;
 }
+const LADK={'112':'Kvieši, ziemas','160':'Griķi','211':'Rapsis, vasaras','218':'Eļļas rutks sēklas ieguvei','410':'Lauka pupas','610':'Papuve (izņemot zaļmēslojuma)','612':'Zaļmēslojuma augu papuve','710':'Ilggadīgie zālāji','720':'Aramzemē sētu zālaugu maisījums','726':'Lucerna'};
+function impField(x){
+ const p=x.p||{},c=centroid(x.g),ha=areaHa(x.g),code=String(p.PRODUCT_CO||'').trim(),decl=parseFloat(p.AREA_DECLA);
+ const yr=/^\d{4}$/.test(p.PERIOD_COD||'')?p.PERIOD_COD:season,crops={};
+ if(code)crops[yr]=LADK[code]||('LAD kods '+code);
+ const cand=Object.entries(p).find(([k,v])=>/nos|name|lauk/i.test(k)&&v);
+ return{id:uid(),name:cand?String(cand[1]):(p.PARCEL_NUM?'Lauks '+p.PARCEL_NUM:'Lauks '+(db.fields.length+1)),
+  area:(isNaN(decl)?ha:decl).toFixed(2),crops,lat:c[0],lon:c[1],geom:x.g,src:p,_yr:yr,_ha:ha};
+}
+function findSame(n){
+ return db.fields.find(f=>f.geom&&f.lat!=null&&dist({lat:f.lat,lon:f.lon},{lat:n.lat,lon:n.lon})<10&&Math.abs((parseFloat(f.area)||0)-(parseFloat(n.area)||0))<=Math.max(.1,.03*(parseFloat(n.area)||0)));
+}
+function putImp(n,name){
+ const old=findSame(n),yr=n._yr;delete n._yr;delete n._ha;
+ if(old){old.crops=old.crops||{};if(n.crops[yr])old.crops[yr]=n.crops[yr];old.src=n.src;return'upd'}
+ if(name)n.name=name;db.fields.push(n);return'new';
+}
 function addFromImp(i){
  const x=imp[i];map.closePopup();
- const cand=Object.entries(x.p).find(([k,v])=>/nos|name|lauk/i.test(k)&&v);
- const name=prompt('Lauka nosaukums:',cand?cand[1]:'Lauks '+(db.fields.length+1));
+ const n=impField(x);
+ if(findSame(n)){const r=putImp(n);save();mmsg='Šis lauks jau ir sarakstā; atjaunota '+yr4(x)+'. gada kultūra.';render();return}
+ const name=prompt('Lauka nosaukums:',n.name);
  if(!name)return;
- const c=centroid(x.g);
- db.fields.push({id:uid(),name:name.trim(),area:areaHa(x.g).toFixed(2),crops:{},lat:c[0],lon:c[1],geom:x.g,src:x.p});
+ putImp(n,name.trim());
  save();mmsg='Lauks „'+name.trim()+'” pievienots.';render();
+}
+const yr4=x=>/^\d{4}$/.test((x.p||{}).PERIOD_COD||'')?x.p.PERIOD_COD:season;
+function addAllImp(){
+ if(!imp.length)return;
+ if(!confirm('Pievienot visas '+imp.length+' ielādētās kontūras kā laukus? Jau esošie lauki ar tādu pašu kontūru netiks dublēti, tiem tiks atjaunota kultūra.'))return;
+ let nw=0,up=0;
+ imp.forEach(x=>{const r=putImp(impField(x));if(r==='new')nw++;else up++});
+ save();mmsg='Pievienoti '+nw+' jauni lauki'+(up?', atjaunoti '+up+' esošie':'')+'. Atveriet cilni „Lauki”.';render();
 }
 function me(){locate(()=>{mmsg='';render();if(map)map.setView([pos.lat,pos.lon],16)})}
 function openFromMap(id){tab='lauki';openField(id)}
@@ -551,7 +578,7 @@ function finishDraw(){
 }
 function mapRender(){
  const ms=document.getElementById('ms');
- document.getElementById('mr').classList.toggle('hide',!!drw);document.getElementById('dt').classList.toggle('hide',!drw);document.getElementById('mapwrap').classList.toggle('drawing',!!drw);
+ document.getElementById('mr').classList.toggle('hide',!!drw);document.getElementById('addall').classList.toggle('hide',!imp.length);document.getElementById('dt').classList.toggle('hide',!drw);document.getElementById('mapwrap').classList.toggle('drawing',!!drw);
  if(typeof L==='undefined'){ms.textContent='Kartes bibliotēka neielādējās. Vajadzīgs internets.';return}
  ms.textContent=drw?'':(mmsg||gpsMsg);
  if(!map){
